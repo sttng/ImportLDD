@@ -29,7 +29,7 @@ class ImportSomeData(Operator, ImportHelper):
     filename_ext = ".lxf"
 
     filter_glob: StringProperty(
-        default="*.txt",
+        default="*.lxf",
         options={'HIDDEN'},
         maxlen=255,  # Max internal buffer length, longer would be clamped.
     )
