@@ -59,16 +59,16 @@ class ImportLDDOps(Operator, ImportHelper):
 
 # Only needed if you want to add into a dynamic menu
 def menu_func_import(self, context):
-    self.layout.operator(ImportSomeData.bl_idname, text="LEGO Digital Designer (.lxf/.lxfml)")
+    self.layout.operator(ImportLDDOps.bl_idname, text="LEGO Digital Designer (.lxf/.lxfml)")
 
 
 def register():
-    bpy.utils.register_class(ImportSomeData)
+    bpy.utils.register_class(ImportLDDOps)
     bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
 
 
 def unregister():
-    bpy.utils.unregister_class(ImportSomeData)
+    bpy.utils.unregister_class(ImportLDDOps)
     bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
 
 
@@ -76,4 +76,4 @@ if __name__ == "__main__":
     register()
 
     # test call
-    bpy.ops.import_test.some_data('INVOKE_DEFAULT')
+    bpy.ops.import_scene.importldd('INVOKE_DEFAULT')
