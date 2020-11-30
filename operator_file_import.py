@@ -20,16 +20,17 @@ from bpy.props import StringProperty, BoolProperty, EnumProperty
 from bpy.types import Operator
 
 
-class ImportSomeData(Operator, ImportHelper):
+class ImportLDDOps(Operator, ImportHelper):
     """This appears in the tooltip of the operator and in the generated docs"""
-    bl_idname = "import_test.some_data"  # important since its how bpy.ops.import_test.some_data is constructed
-    bl_label = "Import Some Data"
+    bl_description  = "Import LEGO Digital Designer scenes (.lxf/.lxfml)"
+    bl_idname = "import_scene.importldd"  # important since its how bpy.ops.import_test.some_data is constructed
+    bl_label = "Import LDD scenes"
 
     # ImportHelper mixin class uses this
     filename_ext = ".lxf"
 
     filter_glob: StringProperty(
-        default="*.lxf",
+        default="*.lxf;*.lxfml",
         options={'HIDDEN'},
         maxlen=255,  # Max internal buffer length, longer would be clamped.
     )
@@ -58,7 +59,7 @@ class ImportSomeData(Operator, ImportHelper):
 
 # Only needed if you want to add into a dynamic menu
 def menu_func_import(self, context):
-    self.layout.operator(ImportSomeData.bl_idname, text="Text Import Operator")
+    self.layout.operator(ImportSomeData.bl_idname, text="LEGO Digital Designer (.lxf/.lxfml)")
 
 
 def register():
