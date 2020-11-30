@@ -1,5 +1,17 @@
-import bpy
+bl_info = {
+    "name": "Import LEGO Digital Designer",
+    "description": "Import LEGO Digital Designer scenes in .lxf and .lxfml formats",
+    "author": "123 <123@gmail.com>",
+    "version": (0, 0, 1),
+    "blender": (2, 90, 0),
+    "location": "File > Import",
+    "warning": "",
+    "wiki_url": "https://github.com/",
+    "tracker_url": "https://github.com/",
+    "category": "Import-Export"
+    }
 
+import bpy
 
 def read_some_data(context, filepath, use_some_setting):
     print("running read_some_data...")
@@ -37,10 +49,22 @@ class ImportLDDOps(Operator, ImportHelper):
 
     # List of operator properties, the attributes will be assigned
     # to the class instance from the operator settings before calling.
+    lddPath: StringProperty(
+        name="",
+        description="Full filepath to the LDD db folder / db.lif file",
+        default='c:\db.lif',
+    ) 
+    
     use_setting: BoolProperty(
         name="Example Boolean",
         description="Example Tooltip",
         default=True,
+    )
+    
+    useLogoStuds: BoolProperty(
+        name="Show 'LEGO' logo on studs",
+        description="Shows the LEGO logo on each stud (at the expense of some extra geometry and import time)",
+        default=False,
     )
 
     type: EnumProperty(
