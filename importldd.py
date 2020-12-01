@@ -368,7 +368,7 @@ class Geometry:
             GeometryCount += 1
             GeometryLocation = '{0}{1}{2}{3}'.format(GEOMETRIEPATH, designID,'.g',GeometryCount)
 
-        primitive = Primitive(data = database.filelist[os.path.normpath(PRIMITIVEPATH + designID + '.xml')].read())
+        primitive = Primitive(data = database.filelist[PRIMITIVEPATH + designID + '.xml'].read())
         self.Partname = primitive.Designname
         self.studsFields2D = primitive.Fields2D
         try:
@@ -925,7 +925,8 @@ class Converter:
                         fmt = ", "
                         
                     #gop.write(']\n')
-
+                    
+                    usenormal = True
                     if usenormal == True: # write normals in case flag True
                         # WARNING: SOME PARTS MAY HAVE BAD NORMALS. FOR EXAMPLE MAYBE PART: (85861) PL.ROUND 1X1 W. THROUGHG. HOLE
                         #gop.write('\t\tnormal3f[] normals = [')
@@ -1147,6 +1148,7 @@ def main():
         converter.Export(filename=obj_filename)
         
     elif os.path.isfile(FindDatabase()):
+        print("Found db.lif. Will use this.")
         converter.LoadDatabase(databaselocation = FindDatabase())
         converter.LoadScene(filename=lxf_filename)
         converter.Export(filename=obj_filename)
@@ -1186,9 +1188,10 @@ def read_some_data(context, filepath, use_some_setting):
         converter.Export(filename=filepath)
         
     elif os.path.isfile(FindDatabase()):
+        print("Found db.lif. Will use this.")
         converter.LoadDatabase(databaselocation = FindDatabase())
         converter.LoadScene(filename=filepath)
-        #converter.Export(filename=obj_filename)
+        converter.Export(filename=filepath)
     else:
         print("no LDD database found please install LEGO-Digital-Designer")
 
@@ -1223,6 +1226,12 @@ class ImportLDDOps(Operator, ImportHelper):
         name="",
         description="Full filepath to the LDD db folder / db.lif file",
         default=FindDatabase(),
+    ) 
+    
+    use_setting: BoolProperty(
+        name="Example Boolean",
+        description="Example Tooltip",
+        default=True,
     )
     
     useLogoStuds: BoolProperty(
