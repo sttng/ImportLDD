@@ -368,7 +368,7 @@ class Geometry:
             GeometryCount += 1
             GeometryLocation = '{0}{1}{2}{3}'.format(GEOMETRIEPATH, designID,'.g',GeometryCount)
 
-        primitive = Primitive(data = database.filelist[PRIMITIVEPATH + designID + '.xml'].read())
+        primitive = Primitive(data = database.filelist[os.path.normpath(PRIMITIVEPATH + designID + '.xml')].read())
         self.Partname = primitive.Designname
         self.studsFields2D = primitive.Fields2D
         try:
@@ -673,8 +673,8 @@ class LIFReader:
         else:
             if self.filehandle.read(4).decode() == "LIFF":
                 self.parse(prefix='', offset=self.readInt(offset=72) + 64)
-                if self.fileexist('/Materials.xml') and self.fileexist('/info.xml') and self.fileexist(MATERIALNAMESPATH + 'EN/localizedStrings.loc'):
-                    self.dbinfo = DBinfo(data=self.filelist['/info.xml'].read())
+                if self.fileexist(os.path.normpath('/Materials.xml')) and self.fileexist(os.path.normpath('/info.xml')) and self.fileexist(os.path.normpath(MATERIALNAMESPATH + 'EN/localizedStrings.loc')):
+                    self.dbinfo = DBinfo(data=self.filelist[os.path.normpath('/info.xml')].read())
                     print("Database OK.")
                     self.initok = True
                 else:
@@ -723,7 +723,7 @@ class LIFReader:
                 offset = self.parse(prefix=entryName, offset=offset)
             elif entryType == 2:
                 fileSize = self.readInt(offset=offset) - 20
-                self.filelist[entryName] = LIFFile(name=entryName, offset=self.packedFilesOffset, size=fileSize, handle=self.filehandle)
+                self.filelist[os.path.normpath(entryName)] = LIFFile(name=entryName, offset=self.packedFilesOffset, size=fileSize, handle=self.filehandle)
                 offset += 24
                 self.packedFilesOffset += fileSize
 
