@@ -13,6 +13,7 @@ bl_info = {
 
 import bpy
 import mathutils
+import bmesh
 
 
 
@@ -805,7 +806,7 @@ class Converter:
         
         
         for bri in self.scene.Bricks:
-            current += 1
+            current += 1    
 
             for pa in bri.Parts:
                 currentpart += 1
@@ -865,10 +866,8 @@ class Converter:
                 
                 #out.write('''
         #def "brick{0}_{1}" (
-        #    add references = @./{2}/{1}.usda@
-        #)
-        #{{\n'''.format(currentpart, written_obj, assetsDir))
-                
+        #    add references = @./{2}/{1}.usda@ {{\n'''.format(currentpart, written_obj, assetsDir))
+            
                 if not (len(pa.Bones) > flexflag):
                 # Flex parts don't need to be moved
                     #out.write('\t\t\tmatrix4d xformOp:transform = ( ({0}, {1}, {2}, {3}), ({4}, {5}, {6}, {7}), ({8}, {9}, {10}, {11}), ({12}, {13}, {14}, {15}) )\n'.format(n11, n12, n13, n14, n21, n22, n23, n24, n31, n32, n33, n34, n41, n42 ,n43, n44))
@@ -918,11 +917,21 @@ class Converter:
                     #gop = open(os.path.join(assetsDir,"geo" + written_geo + ".usda"), "w+")
                     #gop.write('''#usda 1.0 defaultPrim = "geo{0}" def Mesh "mesh{0}" {{\n'''.format(written_geo))
                     
+                    mesh = bpy.data.meshes.new("brick{0}_{1}_g{2}".format(currentpart, written_obj, written_geo))  # add the new mesh
+                    obj = bpy.data.objects.new(mesh.name, mesh)
+                    col = bpy.data.collections.get("Collection")
+                    col.objects.link(obj)
+                    bpy.context.view_layer.objects.active = obj
+                    
+                    
                     #gop.write('\t\tpoint3f[] points = [')
-                    fmt = ""
+
+                    verts = []
                     for point in geo.Parts[part].outpositions:
                         #gop.write('{0}({1}, {2}, {3})'.format(fmt, point.x, point.y, point.z))
-                        fmt = ", "
+                        #fmt = ", "
+                        single_vert = Vector(point.x, point.y, point.z)
+                        verts.append(single_vert)
                         
                     #gop.write(']\n')
                     
@@ -985,10 +994,13 @@ class Converter:
                     #gop.write(']\n')
                     
                     #gop.write('\t\tint[] faceVertexIndices = [')
-                    fmt = ""
+                    
+                    faces = []
                     for face in geo.Parts[part].faces:
                         #gop.write('{0}{1},{2},{3}'.format(fmt, face.a , face.b, face.c))
                         fmt = ", "
+                        single_face = [face.a , face.b, face.c]
+                        faces.append(single_face)
                             
                     #gop.write(']\n')
                     #gop.write('\n\t\tcolor3f[] primvars:displayColor = [(1, 0, 0)]\n')
@@ -1012,7 +1024,9 @@ class Converter:
                             fmt = ", "
                             #out.write(face.string("f",indexOffset,textOffset))
                     
-                    gop.close()
+                    #gop.close()
+                    edges = []
+                    mesh.from_pydata(verts, edges, faces)
 
                 #Logo on studs
                 uselogoonstuds = True
