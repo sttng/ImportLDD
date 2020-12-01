@@ -789,14 +789,16 @@ class Converter:
         
         camera_data = bpy.data.cameras.new(name='Cam_Minus_1')
         camera_object = bpy.data.objects.new('Cam_Minus_1', camera_data)
+        matrix = mathutils.Matrix()
+        matrix = mathutils.Matrix(((1.0, 0.0, 0.0, 0.0),(0.0, -1.0, 0.0, 0.0),(0.0, 0.0, -1.0, 0.0),(0.0, 0.0, 0.0, 1.0)))                    
         bpy.context.scene.collection.objects.link(camera_object)
+        bpy.context.camera_object.matrix_world = matrix 
         
         for cam in self.scene.Scenecamera:
             camera_data = bpy.data.cameras.new(name='Cam_{0}'.format(cam.refID))   
             camera_object = bpy.data.objects.new('Cam_{0}'.format(cam.refID), camera_data)
-            #matrix = Matrix([1,1,1],[0,1,0],[1,0,0])
             matrix = mathutils.Matrix()
-            matrix = Matrix([cam.matrix.n11, cam.matrix.n12, cam.matrix.n13, cam.matrix.n14],[cam.matrix.n21, cam.matrix.n22, cam.matrix.n23, cam.matrix.n24],[cam.matrix.n31, cam.matrix.n32, cam.matrix.n33, cam.matrix.n34],[cam.matrix.n41, cam.matrix.n42, cam.matrix.n43, cam.matrix.n44])
+            matrix = mathutils.Matrix(((cam.matrix.n11, cam.matrix.n12, cam.matrix.n13, cam.matrix.n14),(cam.matrix.n21, cam.matrix.n22, cam.matrix.n23, cam.matrix.n24),(cam.matrix.n31, cam.matrix.n32, cam.matrix.n33, cam.matrix.n34),(cam.matrix.n41, cam.matrix.n42, cam.matrix.n43, cam.matrix.n44)))
             bpy.context.camera_object.matrix_world = matrix
             bpy.context.scene.collection.objects.link(camera_object)
             
