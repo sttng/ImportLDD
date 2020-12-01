@@ -864,6 +864,9 @@ class Converter:
                 if not (len(pa.Bones) > flexflag):
                 # Flex parts don't need to be moved
                     #out.write('\t\t\tmatrix4d xformOp:transform = ( ({0}, {1}, {2}, {3}), ({4}, {5}, {6}, {7}), ({8}, {9}, {10}, {11}), ({12}, {13}, {14}, {15}) )\n'.format(n11, n12, n13, n14, n21, n22, n23, n24, n31, n32, n33, n34, n41, n42 ,n43, n44))
+                    transform_matrix = mathutils.Matrix(((n11, n12, n13, n14),(n21, n22, n23, n24),(n31, n32, n33, n34),(n41, n42, n43, n44)))
+
+                    
                     # Random Scale for brick seams
                     scalefact = (geo.maxGeoBounding - 0.025 * random.uniform(0.0, 1.000)) / geo.maxGeoBounding
                     #out.write('\t\t\tdouble3 xformOp:scale = ({0}, {0}, {0})\n'.format(scalefact))
@@ -915,9 +918,6 @@ class Converter:
                     col = bpy.data.collections.get("Collection")
                     col.objects.link(obj)
                     bpy.context.view_layer.objects.active = obj
-                    
-                    
-                    #gop.write('\t\tpoint3f[] points = [')
 
                     verts = []
                     for point in geo.Parts[part].outpositions:
