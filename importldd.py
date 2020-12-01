@@ -13,6 +13,10 @@ bl_info = {
 
 import bpy
 import mathutils
+from bpy_extras.io_utils import (
+        ImportHelper,
+        orientation_helper,
+        )
 
 
 
@@ -948,14 +952,14 @@ class Converter:
                         decoCount += 1
 
                     extfile = ''
-                    if not deco == '0':
-                        extfile = deco + '.png'
-                        matname += "_" + deco
-                        decofilename = DECORATIONPATH + deco + '.png'
-                        if not os.path.isfile(os.path.join(assetsDir, extfile)) and self.database.fileexist(decofilename):
-                            with open(os.path.join(assetsDir, extfile), "wb") as f:
-                                f.write(self.database.filelist[decofilename].read())
-                                f.close()
+                    #if not deco == '0':
+                    #    extfile = deco + '.png'
+                    #    matname += "_" + deco
+                    #    decofilename = DECORATIONPATH + deco + '.png'
+                    #    if not os.path.isfile(os.path.join(assetsDir, extfile)) and self.database.fileexist(decofilename):
+                    #        with open(os.path.join(assetsDir, extfile), "wb") as f:
+                    #            f.write(self.database.filelist[decofilename].read())
+                    #            f.close()
 
                     #if not matname in usedmaterials:
                     #    usedmaterials.append(matname)
@@ -1207,7 +1211,7 @@ from bpy_extras.io_utils import ImportHelper
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 from bpy.types import Operator
 
-
+@orientation_helper(axis_forward='-Z', axis_up='Y')
 class ImportLDDOps(Operator, ImportHelper):
     """This appears in the tooltip of the operator and in the generated docs"""
     bl_description  = "Import LEGO Digital Designer scenes (.lxf/.lxfml)"
