@@ -13,7 +13,6 @@ bl_info = {
 
 import bpy
 import mathutils
-import bmesh
 
 
 
@@ -362,12 +361,12 @@ class Geometry:
         self.maxGeoBounding = -1	
         self.studsFields2D = []
         
-        GeometryLocation = '{0}{1}{2}'.format(GEOMETRIEPATH, designID,'.g')
+        GeometryLocation = os.path.normpath('{0}{1}{2}'.format(GEOMETRIEPATH, designID,'.g'))
         GeometryCount = 0
         while str(GeometryLocation) in database.filelist:
             self.Parts[GeometryCount] = GeometryReader(data=database.filelist[GeometryLocation].read())
             GeometryCount += 1
-            GeometryLocation = '{0}{1}{2}{3}'.format(GEOMETRIEPATH, designID,'.g',GeometryCount)
+            GeometryLocation = os.path.normpath('{0}{1}{2}{3}'.format(GEOMETRIEPATH, designID,'.g',GeometryCount))
 
         primitive = Primitive(data = database.filelist[os.path.normpath(PRIMITIVEPATH + designID + '.xml')].read())
         self.Partname = primitive.Designname
@@ -857,13 +856,7 @@ class Converter:
                 if (len(pa.Bones) > flexflag):
                     # Flex parts are "unique". Ensure they get a unique filename
                     written_obj = written_obj + "_" + uniqueId
-                    # Create numpy matrix from them and create inverted matrix
-                    x = np.array([[n11,n21,n31,n41],[n12,n22,n32,n42],[n13,n23,n33,n43],[n14,n24,n34,n44]])
-                    x_inv = np.linalg.inv(x)
-                    
-                    # undoTransformMatrix not used currently. Might use later
-                    undoTransformMatrix = Matrix3D(n11=x_inv[0][0],n12=x_inv[0][1],n13=x_inv[0][2],n14=x_inv[0][3],n21=x_inv[1][0],n22=x_inv[1][1],n23=x_inv[1][2],n24=x_inv[1][3],n31=x_inv[2][0],n32=x_inv[2][1],n33=x_inv[2][2],n34=x_inv[2][3],n41=x_inv[3][0],n42=x_inv[3][1],n43=x_inv[3][2],n44=x_inv[3][3])
-                
+                                
                 #out.write('''
         #def "brick{0}_{1}" (
         #    add references = @./{2}/{1}.usda@ {{\n'''.format(currentpart, written_obj, assetsDir))
@@ -875,7 +868,7 @@ class Converter:
                     scalefact = (geo.maxGeoBounding - 0.025 * random.uniform(0.0, 1.000)) / geo.maxGeoBounding
                     #out.write('\t\t\tdouble3 xformOp:scale = ({0}, {0}, {0})\n'.format(scalefact))
                     #out.write('\t\t\tuniform token[] xformOpOrder = ["xformOp:transform", "xformOp:scale"]\n')
-                    
+
                     # miny used for floor plane later
                     if miny > float(n42):
                         miny = n42
@@ -930,7 +923,7 @@ class Converter:
                     for point in geo.Parts[part].outpositions:
                         #gop.write('{0}({1}, {2}, {3})'.format(fmt, point.x, point.y, point.z))
                         #fmt = ", "
-                        single_vert = Vector(point.x, point.y, point.z)
+                        single_vert = mathutils.Vector([point.x, point.y, point.z])
                         verts.append(single_vert)
                         
                     #gop.write(']\n')
@@ -951,8 +944,8 @@ class Converter:
                         print('WARNING: {0}.g{1} has NO material assignment in lxf. Replaced with color 9. Fix {0}.xml faces values.'.format(pa.designID, part))
                         materialCurrentPart = '9'
                     
-                    lddmatri = self.allMaterials.getMaterialRibyId(materialCurrentPart)
-                    matname = materialCurrentPart
+                    #lddmatri = self.allMaterials.getMaterialRibyId(materialCurrentPart)
+                    #matname = materialCurrentPart
 
                     deco = '0'
                     if hasattr(pa, 'decoration') and len(geo.Parts[part].textures) > 0:
@@ -970,17 +963,17 @@ class Converter:
                                 f.write(self.database.filelist[decofilename].read())
                                 f.close()
 
-                    if not matname in usedmaterials:
-                        usedmaterials.append(matname)
-                        outmat = open(os.path.join(assetsDir,"material_" + matname + ".usda"), "w+")
+                    #if not matname in usedmaterials:
+                    #    usedmaterials.append(matname)
+                    #    outmat = open(os.path.join(assetsDir,"material_" + matname + ".usda"), "w+")
                         
-                        if not deco == '0':
-                            outmat.write(lddmatri.string(deco))
+                    #    if not deco == '0':
+                    #        outmat.write(lddmatri.string(deco))
 
-                        else:
-                            outmat.write(lddmatri.string(None))
+                    #    else:
+                    #        outmat.write(lddmatri.string(None))
                         
-                        outmat.close()
+                    #    outmat.close()
 
                     #op.write('\n\t\tcolor3f[] primvars:displayColor = [({0}, {1}, {2})]\n'.format(lddmatri.r, lddmatri.g, lddmatri.b))
                     #op.write('\t\trel material:binding = <Material{0}/material_{0}a>\n'.format(matname))
