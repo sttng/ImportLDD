@@ -898,15 +898,11 @@ class Converter:
                             for j, p in enumerate(geo.Parts[part].outpositions):
                                 if (geo.Parts[part].bonemap[j] == i):
                                     p.transform( invert * b.matrix)
-                                    #transform with inverted values (to undo the transformation)
-                                    #geo.Parts[part].outpositions[j].transform(undoTransformMatrix)
                                     
                             # normals
                             for k, n in enumerate(geo.Parts[part].outnormals):
                                 if (geo.Parts[part].bonemap[k] == i):
                                     n.transformW( invert * b.matrix)
-                                    #transform with inverted values (to undo the transformation)
-                                    #geo.Parts[part].outnormals[k].transformW(undoTransformMatrix)
 
                     #op.write('\tdef "g{0}" (\n'.format(part))
                     #op.write('\t\tadd references = @./geo{0}.usda@\n\t)\n\t{{\n'.format(written_geo))
@@ -922,12 +918,8 @@ class Converter:
 
                     verts = []
                     for point in geo.Parts[part].outpositions:
-                        #gop.write('{0}({1}, {2}, {3})'.format(fmt, point.x, point.y, point.z))
-                        #fmt = ", "
                         single_vert = mathutils.Vector([point.x, point.y, point.z])
                         verts.append(single_vert)
-                        
-                    #gop.write(']\n')
                     
                     usenormal = True
                     if usenormal == True: # write normals in case flag True
@@ -991,12 +983,9 @@ class Converter:
                     
                     faces = []
                     for face in geo.Parts[part].faces:
-                        #gop.write('{0}{1},{2},{3}'.format(fmt, face.a , face.b, face.c))
-                        fmt = ", "
                         single_face = [face.a , face.b, face.c]
                         faces.append(single_face)
                             
-                    #gop.write(']\n')
                     #gop.write('\n\t\tcolor3f[] primvars:displayColor = [(1, 0, 0)]\n')
                             
                     if len(geo.Parts[part].textures) > 0:
@@ -1021,6 +1010,7 @@ class Converter:
                     #gop.close()
                     edges = []
                     mesh.from_pydata(verts, edges, faces)
+                   
 
                 #Logo on studs
                 uselogoonstuds = True
