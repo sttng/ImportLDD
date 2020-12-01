@@ -856,7 +856,8 @@ class Converter:
                 if (len(pa.Bones) > flexflag):
                     # Flex parts are "unique". Ensure they get a unique filename
                     written_obj = written_obj + "_" + uniqueId
-                                
+                
+                brick_object = bpy.data.objects.new("brick{0}_{1}".format(currentpart, written_obj), None)                
                 #out.write('''
         #def "brick{0}_{1}" (
         #    add references = @./{2}/{1}.usda@ {{\n'''.format(currentpart, written_obj, assetsDir))
