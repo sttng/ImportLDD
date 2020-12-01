@@ -45,6 +45,8 @@ import math
 import struct
 import zipfile
 from xml.dom import minidom
+import uuid
+import random
 import time
 
 if sys.version_info < (3, 0):
@@ -366,7 +368,7 @@ class Geometry:
             GeometryCount += 1
             GeometryLocation = '{0}{1}{2}{3}'.format(GEOMETRIEPATH, designID,'.g',GeometryCount)
 
-        primitive = Primitive(data = database.filelist[PRIMITIVEPATH + designID + '.xml'].read())
+        primitive = Primitive(data = database.filelist[os.path.normpath(PRIMITIVEPATH + designID + '.xml')].read())
         self.Partname = primitive.Designname
         self.studsFields2D = primitive.Fields2D
         try:
@@ -789,18 +791,279 @@ class Converter:
         
         camera_data = bpy.data.cameras.new(name='Cam_Minus_1')
         camera_object = bpy.data.objects.new('Cam_Minus_1', camera_data)
-        matrix = mathutils.Matrix()
-        matrix = mathutils.Matrix(((1.0, 0.0, 0.0, 0.0),(0.0, -1.0, 0.0, 0.0),(0.0, 0.0, -1.0, 0.0),(0.0, 0.0, 0.0, 1.0)))
-        camera_object.matrix_world = matrix 
+        transform_matrix = mathutils.Matrix(((1.0, 0.0, 0.0, 0.0),(0.0, -1.0, 0.0, 0.0),(0.0, 0.0, -1.0, 0.0),(0.0, 0.0, 0.0, 1.0)))
+        camera_object.matrix_world = transform_matrix
         bpy.context.scene.collection.objects.link(camera_object)
         
         for cam in self.scene.Scenecamera:
             camera_data = bpy.data.cameras.new(name='Cam_{0}'.format(cam.refID))   
             camera_object = bpy.data.objects.new('Cam_{0}'.format(cam.refID), camera_data)
-            matrix = mathutils.Matrix()
-            matrix = mathutils.Matrix(((cam.matrix.n11, cam.matrix.n12, cam.matrix.n13, cam.matrix.n14),(cam.matrix.n21, cam.matrix.n22, cam.matrix.n23, cam.matrix.n24),(cam.matrix.n31, cam.matrix.n32, cam.matrix.n33, cam.matrix.n34),(cam.matrix.n41, cam.matrix.n42, cam.matrix.n43, cam.matrix.n44)))
-            camera_object.matrix_world = matrix 
+            transform_matrix = mathutils.Matrix(((cam.matrix.n11, cam.matrix.n12, cam.matrix.n13, cam.matrix.n14),(cam.matrix.n21, cam.matrix.n22, cam.matrix.n23, cam.matrix.n24),(cam.matrix.n31, cam.matrix.n32, cam.matrix.n33, cam.matrix.n34),(cam.matrix.n41, cam.matrix.n42, cam.matrix.n43, cam.matrix.n44)))
+            camera_object.matrix_world = transform_matrix 
             bpy.context.scene.collection.objects.link(camera_object)
+            
+        
+        
+        for bri in self.scene.Bricks:
+            current += 1
+
+            for pa in bri.Parts:
+                currentpart += 1
+
+                if pa.designID not in geometriecache:
+                    geo = Geometry(designID=pa.designID, database=self.database)
+                    progress(current ,total , "(" + geo.designID + ") " + geo.Partname, ' ')
+                    geometriecache[pa.designID] = geo
+                    
+                else:
+                    geo = geometriecache[pa.designID]
+                    progress(current ,total , "(" + geo.designID + ") " + geo.Partname ,'-')
+                
+                # n11=a, n21=d, n31=g, n41=x,
+                # n12=b, n22=e, n32=h, n42=y,
+                # n13=c, n23=f, n33=i, n43=z,
+                # n14=0, n24=0, n34=0, n44=1
+                
+                # Read out 1st Bone matrix values
+                ind = 0
+                n11 = pa.Bones[ind].matrix.n11
+                n12 = pa.Bones[ind].matrix.n12
+                n13 = pa.Bones[ind].matrix.n13
+                n14 = pa.Bones[ind].matrix.n14
+                n21 = pa.Bones[ind].matrix.n21
+                n22 = pa.Bones[ind].matrix.n22
+                n23 = pa.Bones[ind].matrix.n23
+                n24 = pa.Bones[ind].matrix.n24
+                n31 = pa.Bones[ind].matrix.n31
+                n32 = pa.Bones[ind].matrix.n32
+                n33 = pa.Bones[ind].matrix.n33
+                n34 = pa.Bones[ind].matrix.n34
+                n41 = pa.Bones[ind].matrix.n41
+                n42 = pa.Bones[ind].matrix.n42
+                n43 = pa.Bones[ind].matrix.n43
+                n44 = pa.Bones[ind].matrix.n44
+                
+                # Only parts with more then 1 bone are flex parts and for these we need to undo the transformation later
+                flexflag = 1
+                uniqueId = str(uuid.uuid4().hex)
+                material_string = '_' + '_'.join(pa.materials)
+                written_obj = geo.designID + material_string
+                
+                if hasattr(pa, 'decoration'):
+                    decoration_string = '_' + '_'.join(pa.decoration)
+                    written_obj = written_obj + decoration_string
+                
+                if (len(pa.Bones) > flexflag):
+                    # Flex parts are "unique". Ensure they get a unique filename
+                    written_obj = written_obj + "_" + uniqueId
+                    # Create numpy matrix from them and create inverted matrix
+                    x = np.array([[n11,n21,n31,n41],[n12,n22,n32,n42],[n13,n23,n33,n43],[n14,n24,n34,n44]])
+                    x_inv = np.linalg.inv(x)
+                    
+                    # undoTransformMatrix not used currently. Might use later
+                    undoTransformMatrix = Matrix3D(n11=x_inv[0][0],n12=x_inv[0][1],n13=x_inv[0][2],n14=x_inv[0][3],n21=x_inv[1][0],n22=x_inv[1][1],n23=x_inv[1][2],n24=x_inv[1][3],n31=x_inv[2][0],n32=x_inv[2][1],n33=x_inv[2][2],n34=x_inv[2][3],n41=x_inv[3][0],n42=x_inv[3][1],n43=x_inv[3][2],n44=x_inv[3][3])
+                
+                #out.write('''
+        #def "brick{0}_{1}" (
+        #    add references = @./{2}/{1}.usda@
+        #)
+        #{{\n'''.format(currentpart, written_obj, assetsDir))
+                
+                if not (len(pa.Bones) > flexflag):
+                # Flex parts don't need to be moved
+                    #out.write('\t\t\tmatrix4d xformOp:transform = ( ({0}, {1}, {2}, {3}), ({4}, {5}, {6}, {7}), ({8}, {9}, {10}, {11}), ({12}, {13}, {14}, {15}) )\n'.format(n11, n12, n13, n14, n21, n22, n23, n24, n31, n32, n33, n34, n41, n42 ,n43, n44))
+                    # Random Scale for brick seams
+                    scalefact = (geo.maxGeoBounding - 0.025 * random.uniform(0.0, 1.000)) / geo.maxGeoBounding
+                    #out.write('\t\t\tdouble3 xformOp:scale = ({0}, {0}, {0})\n'.format(scalefact))
+                    #out.write('\t\t\tuniform token[] xformOpOrder = ["xformOp:transform", "xformOp:scale"]\n')
+                    
+                    # miny used for floor plane later
+                    if miny > float(n42):
+                        miny = n42
+                                            
+                #op = open(written_obj + ".usda", "w+")
+                #op.write('''#usda 1.0 string name = "brick_{0}"{{\n'''.format(written_obj))
+                
+                # transform -------------------------------------------------------
+                decoCount = 0
+                for part in geo.Parts:
+                    
+                    written_geo = str(geo.designID) + '_' + str(part)
+                    
+                    geo.Parts[part].outpositions = [elem.copy() for elem in geo.Parts[part].positions]
+                    geo.Parts[part].outnormals = [elem.copy() for elem in geo.Parts[part].normals]
+                    
+                    # translate / rotate only parts with more then 1 bone. This are flex parts
+                    if (len(pa.Bones) > flexflag):
+
+                        written_geo = written_geo + '_' + uniqueId
+                        for i, b in enumerate(pa.Bones):
+                            # positions
+                            for j, p in enumerate(geo.Parts[part].outpositions):
+                                if (geo.Parts[part].bonemap[j] == i):
+                                    p.transform( invert * b.matrix)
+                                    #transform with inverted values (to undo the transformation)
+                                    #geo.Parts[part].outpositions[j].transform(undoTransformMatrix)
+                                    
+                            # normals
+                            for k, n in enumerate(geo.Parts[part].outnormals):
+                                if (geo.Parts[part].bonemap[k] == i):
+                                    n.transformW( invert * b.matrix)
+                                    #transform with inverted values (to undo the transformation)
+                                    #geo.Parts[part].outnormals[k].transformW(undoTransformMatrix)
+
+                    #op.write('\tdef "g{0}" (\n'.format(part))
+                    #op.write('\t\tadd references = @./geo{0}.usda@\n\t)\n\t{{\n'.format(written_geo))
+                    
+                    #gop = open(os.path.join(assetsDir,"geo" + written_geo + ".usda"), "w+")
+                    #gop.write('''#usda 1.0 defaultPrim = "geo{0}" def Mesh "mesh{0}" {{\n'''.format(written_geo))
+                    
+                    #gop.write('\t\tpoint3f[] points = [')
+                    fmt = ""
+                    for point in geo.Parts[part].outpositions:
+                        #gop.write('{0}({1}, {2}, {3})'.format(fmt, point.x, point.y, point.z))
+                        fmt = ", "
+                        
+                    #gop.write(']\n')
+
+                    if usenormal == True: # write normals in case flag True
+                        # WARNING: SOME PARTS MAY HAVE BAD NORMALS. FOR EXAMPLE MAYBE PART: (85861) PL.ROUND 1X1 W. THROUGHG. HOLE
+                        #gop.write('\t\tnormal3f[] normals = [')
+                        fmt = ""
+                        for normal in geo.Parts[part].outnormals:
+                            #gop.write('{0}({1}, {2}, {3})'.format(fmt, normal.x, normal.y, normal.z))
+                            fmt = ", "
+
+                    #try catch here for possible problems in materials assignment of various g, g1, g2, .. files in lxf file
+                    try:
+                        materialCurrentPart = pa.materials[part]
+                    except IndexError:
+                        print('WARNING: {0}.g{1} has NO material assignment in lxf. Replaced with color 9. Fix {0}.xml faces values.'.format(pa.designID, part))
+                        materialCurrentPart = '9'
+                    
+                    lddmatri = self.allMaterials.getMaterialRibyId(materialCurrentPart)
+                    matname = materialCurrentPart
+
+                    deco = '0'
+                    if hasattr(pa, 'decoration') and len(geo.Parts[part].textures) > 0:
+                        if decoCount < len(pa.decoration):
+                            deco = pa.decoration[decoCount]
+                        decoCount += 1
+
+                    extfile = ''
+                    if not deco == '0':
+                        extfile = deco + '.png'
+                        matname += "_" + deco
+                        decofilename = DECORATIONPATH + deco + '.png'
+                        if not os.path.isfile(os.path.join(assetsDir, extfile)) and self.database.fileexist(decofilename):
+                            with open(os.path.join(assetsDir, extfile), "wb") as f:
+                                f.write(self.database.filelist[decofilename].read())
+                                f.close()
+
+                    if not matname in usedmaterials:
+                        usedmaterials.append(matname)
+                        outmat = open(os.path.join(assetsDir,"material_" + matname + ".usda"), "w+")
+                        
+                        if not deco == '0':
+                            outmat.write(lddmatri.string(deco))
+
+                        else:
+                            outmat.write(lddmatri.string(None))
+                        
+                        outmat.close()
+
+                    #op.write('\n\t\tcolor3f[] primvars:displayColor = [({0}, {1}, {2})]\n'.format(lddmatri.r, lddmatri.g, lddmatri.b))
+                    #op.write('\t\trel material:binding = <Material{0}/material_{0}a>\n'.format(matname))
+                    #op.write('''\t\tdef "Material{0}" (add references = @./material_{0}.usda@'''.format(matname))
+                    
+                    #gop.write('\t\tint[] faceVertexCounts = [')
+                    fmt = ""
+                    for face in geo.Parts[part].faces:
+                        #gop.write('{0}3'.format(fmt))
+                        fmt = ", "
+                    #gop.write(']\n')
+                    
+                    #gop.write('\t\tint[] faceVertexIndices = [')
+                    fmt = ""
+                    for face in geo.Parts[part].faces:
+                        #gop.write('{0}{1},{2},{3}'.format(fmt, face.a , face.b, face.c))
+                        fmt = ", "
+                            
+                    #gop.write(']\n')
+                    #gop.write('\n\t\tcolor3f[] primvars:displayColor = [(1, 0, 0)]\n')
+                            
+                    if len(geo.Parts[part].textures) > 0:
+                        
+                        #gop.write('\n\t\tfloat2[] primvars:st = [')
+                        fmt = ""
+                        for text in geo.Parts[part].textures:
+                            #gop.write('{0}({1}, {2})'.format(fmt, text.x, (-1) * text.y))
+                            fmt = ", "
+                            
+                        #gop.write('] (\n')
+                        #gop.write('\t\t\tinterpolation = "faceVarying"\n')
+                        #gop.write('\t\t)\n')
+                    
+                        #gop.write('\t\tint[] primvars:st:indices = [')
+                        fmt = ""
+                        for face in geo.Parts[part].faces:
+                            #gop.write('{0}{1},{2},{3}'.format(fmt, face.a, face.b, face.c))
+                            fmt = ", "
+                            #out.write(face.string("f",indexOffset,textOffset))
+                    
+                    gop.close()
+
+                #Logo on studs
+                uselogoonstuds = True
+                if uselogoonstuds == True: # write logo on studs in case flag True
+                    a = 0
+                    for studs in geo.studsFields2D:
+                        a += 1
+                        if studs.type == 23:
+                            for i in range(len(studs.custom2DField)):
+                                for j in range(len(studs.custom2DField[0])):
+                                    if studs.custom2DField[i][j] in LOGOONSTUDSCONNTYPE: #Valid Connection type which are "allowed" for logo on stud
+                                        if not "logoonstuds" in writtenribs:
+                                            writtenribs.append("logoonstuds")
+                                            #dest = shutil.copy('logoonstuds.usdc', assetsDir) 
+                                        #op.write('\tdef "stud{0}_{1}_{2}" (\n'.format(a, i, j))
+                                        #op.write('\t\tadd references = @./logoonstuds.usdc@\n\t)\n\t{')
+                                        #op.write('\t\tfloat xformOp:rotateY = 180')
+                                        #op.write('\n\t\tdouble3 xformOp:translate = ({0}, {1}, {2})'.format(-1 * studs.matrix.n41 + j * 0.4 + 0.0145, -1 * studs.matrix.n42 + 0.14, -1 * studs.matrix.n43 + i * 0.4 - 0)) #Values from trial and error: minx of bounding = -0.4, 0.46 =ty of field + 0.14
+                                        #op.write('\n\t\tmatrix4d xformOp:transform = ( ({0}, {1}, {2}, {3}), ({4}, {5}, {6}, {7}), ({8}, {9}, {10}, {11}), ({12}, {13}, {14}, {15}) )'.format(studs.matrix.n11, studs.matrix.n12, -1 * studs.matrix.n13, studs.matrix.n14, studs.matrix.n21, studs.matrix.n22, -1 * studs.matrix.n23, studs.matrix.n24, -1 * studs.matrix.n31, -1 * studs.matrix.n32, studs.matrix.n33, studs.matrix.n34, 0, 0, 0, studs.matrix.n44))
+                                        #op.write('\n\t\tdouble3 xformOp:scale = ({0}, {0}, {0})'.format(0.81))
+                                        #op.write('\n\t\tuniform token[] xformOpOrder = ["xformOp:transform","xformOp:translate","xformOp:scale", "xformOp:rotateY"]\n')
+                                        #op.write('\n\t\tcolor3f[] primvars:displayColor = [({0}, {1}, {2})]\n'.format(lddmatri.r, lddmatri.g, lddmatri.b))
+                                        #op.write('\t\trel material:binding = <Material{0}/material_{0}a>\n'.format(matname))
+                                        #op.write('''\t\tdef "Material{0}" (add references = @./material_{0}.usda@)'''.format(matname))
+
+                #op.write('}\n')
+                # -----------------------------------------------------------------
+                #op.close()
+                                
+                # Reset index for each part
+                indexOffset = 1
+                textOffset = 1
+                
+                #out.write('\t\t}\n')
+                
+                if not written_obj in writtenribs:
+                    writtenribs.append(written_obj)
+                    #dest = shutil.copy(written_obj + '.usda', assetsDir)
+                
+                #os.remove(written_obj + '.usda')
+        
+        useplane = True                
+        if useplane == True: # write the floor plane in case True
+            i = 0
+            #out.write('''def Mesh "GroundPlane_1"'''.format(miny))
+        
+        #zf.close()
+        #zfmat.close()
+        #out.write('}\n')
+        sys.stdout.write('%s\r' % ('                                                                                                 '))
+        print("--- %s seconds ---" % (time.time() - start_time))
+        
             
 def setDBFolderVars(dbfolderlocation):
     global PRIMITIVEPATH
@@ -960,18 +1223,18 @@ class ImportLDDOps(Operator, ImportHelper):
         name="",
         description="Full filepath to the LDD db folder / db.lif file",
         default=FindDatabase(),
-    ) 
-    
-    use_setting: BoolProperty(
-        name="Example Boolean",
-        description="Example Tooltip",
-        default=True,
     )
     
     useLogoStuds: BoolProperty(
         name="Show 'LEGO' logo on studs",
         description="Shows the LEGO logo on each stud (at the expense of some extra geometry and import time)",
         default=False,
+    )
+
+    useCamera: BoolProperty(
+        name="Import camera(s)",
+        description="Import camera(s) from LEGO Digital Designer",
+        default=True,
     )
 
     type: EnumProperty(
