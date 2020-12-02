@@ -881,8 +881,6 @@ class Converter:
                     
                     # Random Scale for brick seams
                     scalefact = (geo.maxGeoBounding - 0.025 * random.uniform(0.0, 1.000)) / geo.maxGeoBounding
-                    #out.write('\t\t\tdouble3 xformOp:scale = ({0}, {0}, {0})\n'.format(scalefact))
-                    #out.write('\t\t\tuniform token[] xformOpOrder = ["xformOp:transform", "xformOp:scale"]\n')
 
                     # miny used for floor plane later
                     if miny > float(n42):
@@ -1027,12 +1025,14 @@ class Converter:
                     #obj.matrix_world = global_matrix 
                     
                 if not (len(pa.Bones) > flexflag):
-                        #Transform (move) only non-flex parts
+                    #Transform (move) only non-flex parts
                     brick_object.matrix_world =  global_matrix @ transform_matrix
+                    brick_object.scale = (scalefact, scalefact, scalefact)
                     
                 else:
                     brick_object.matrix_world = global_matrix
-                   
+                
+                
 
                 #Logo on studs
                 uselogoonstuds = True
