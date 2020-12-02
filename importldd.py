@@ -914,12 +914,10 @@ class Converter:
                     #gop = open(os.path.join(assetsDir,"geo" + written_geo + ".usda"), "w+")
                     #gop.write('''#usda 1.0 defaultPrim = "geo{0}" def Mesh "mesh{0}" {{\n'''.format(written_geo))
                     
-                    mesh = bpy.data.meshes.new("geo{0}".format(written_geo))  # add the new mesh
+                    mesh = bpy.data.meshes.new("geo{0}".format(written_geo))
                     geo_obj = bpy.data.objects.new(mesh.name, mesh)
                     geo_obj.parent = brick_object
                     col.objects.link(geo_obj)
-                    #bpy.context.scene.collection.objects.link(geo_obj)
-                    #bpy.context.view_layer.objects.active = geo_obj
 
                     verts = []
                     for point in geo.Parts[part].outpositions:
@@ -977,15 +975,7 @@ class Converter:
                     #op.write('\t\trel material:binding = <Material{0}/material_{0}a>\n'.format(matname))
                     #op.write('''\t\tdef "Material{0}" (add references = @./material_{0}.usda@'''.format(matname))
                     
-                    #gop.write('\t\tint[] faceVertexCounts = [')
-                    fmt = ""
-                    for face in geo.Parts[part].faces:
-                        #gop.write('{0}3'.format(fmt))
-                        fmt = ", "
-                    #gop.write(']\n')
-                    
                     #gop.write('\t\tint[] faceVertexIndices = [')
-                    
                     faces = []
                     for face in geo.Parts[part].faces:
                         single_face = [face.a , face.b, face.c]
@@ -1024,8 +1014,8 @@ class Converter:
                     brick_object.scale = (scalefact, scalefact, scalefact)
                     
                 else:
-                    brick_object.matrix_world = global_matrix
-                
+                    #Flex parts need only to be aligned to Blenders coordinate system
+                    brick_object.matrix_world = global_matrix           
 
                 #Logo on studs
                 uselogoonstuds = False
