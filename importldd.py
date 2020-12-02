@@ -5,7 +5,7 @@ bl_info = {
     "version": (0, 0, 1),
     "blender": (2, 90, 0),
     "location": "File > Import",
-    "warning": "",
+    "warning": "Alpha",
     "wiki_url": "https://github.com/",
     "tracker_url": "https://github.com/",
     "category": "Import-Export"
@@ -794,7 +794,7 @@ class Converter:
         #fstop = cl.args.fstop
         #fov =  cl.args.fov
         
-        global_matrix = axis_conversion(from_forward='-Y', from_up='Z', to_forward='Z',to_up='Y').to_4x4()
+        global_matrix = axis_conversion(from_forward='Z', from_up='Y', to_forward='Y',to_up='Z').to_4x4()
         
         camera_data = bpy.data.cameras.new(name='Cam_Minus_1')
         camera_object = bpy.data.objects.new('Cam_Minus_1', camera_data)
@@ -1021,9 +1021,13 @@ class Converter:
                     
                     #obj.matrix_world = global_matrix
                     
+                    
                     if not (len(pa.Bones) > flexflag):
                         #Transform (move) only non-flex parts
-                        obj.matrix_world = transform_matrix
+                        obj.matrix_world =  global_matrix @ transform_matrix
+                    
+                    else:
+                        obj.matrix_world = global_matrix
                    
 
                 #Logo on studs
