@@ -865,12 +865,15 @@ class Converter:
                     written_obj = written_obj + "_" + uniqueId
                 
                 brick_object = bpy.data.objects.new("brick{0}_{1}".format(currentpart, written_obj), None)                
+                bpy.context.scene.collection.objects.link(brick_object)
+                brick_object.empty_display_size = 1.25
+                brick_object.empty_display_type = 'PLAIN_AXES'
                 #out.write('''
         #def "brick{0}_{1}" (
         #    add references = @./{2}/{1}.usda@ {{\n'''.format(currentpart, written_obj, assetsDir))
             
                 if not (len(pa.Bones) > flexflag):
-                # Flex parts don't need to be moved
+                # Flex parts don't need to be moved, but non-flex need
                     #out.write('\t\t\tmatrix4d xformOp:transform = ( ({0}, {1}, {2}, {3}), ({4}, {5}, {6}, {7}), ({8}, {9}, {10}, {11}), ({12}, {13}, {14}, {15}) )\n'.format(n11, n12, n13, n14, n21, n22, n23, n24, n31, n32, n33, n34, n41, n42 ,n43, n44))
                     #transform_matrix = mathutils.Matrix(((n11, n12, n13, n14),(n21, n22, n23, n24),(n31, n32, n33, n34),(n41, n42, n43, n44)))
                     transform_matrix = mathutils.Matrix(((n11, n21, n31, n41),(n12, n22, n32, n42),(n13, n23, n33, n43),(n14, n24, n34, n44)))
@@ -918,11 +921,13 @@ class Converter:
                     #gop = open(os.path.join(assetsDir,"geo" + written_geo + ".usda"), "w+")
                     #gop.write('''#usda 1.0 defaultPrim = "geo{0}" def Mesh "mesh{0}" {{\n'''.format(written_geo))
                     
-                    mesh = bpy.data.meshes.new("brick{0}_{1}_g{2}".format(currentpart, written_obj, written_geo))  # add the new mesh
-                    obj = bpy.data.objects.new(mesh.name, mesh)
-                    col = bpy.data.collections.get("Collection")
-                    col.objects.link(obj)
-                    bpy.context.view_layer.objects.active = obj
+                    mesh = bpy.data.meshes.new("geo{0}".format(written_geo))  # add the new mesh
+                    geo_obj = bpy.data.objects.new(mesh.name, mesh)
+                    geo_obj.parent = brick_object
+                    #col = bpy.data.collections.get("Collection")
+                    #col.objects.link(obj)
+                    bpy.context.scene.collection.objects.link(geo_obj)
+                    bpy.context.view_layer.objects.active = geo_obj
 
                     verts = []
                     for point in geo.Parts[part].outpositions:
@@ -1019,15 +1024,14 @@ class Converter:
                     edges = []
                     mesh.from_pydata(verts, edges, faces)
                     
-                    #obj.matrix_world = global_matrix
+                    #obj.matrix_world = global_matrix 
                     
-                    
-                    if not (len(pa.Bones) > flexflag):
+                if not (len(pa.Bones) > flexflag):
                         #Transform (move) only non-flex parts
-                        obj.matrix_world =  global_matrix @ transform_matrix
+                    brick_object.matrix_world =  global_matrix @ transform_matrix
                     
-                    else:
-                        obj.matrix_world = global_matrix
+                else:
+                    brick_object.matrix_world = global_matrix
                    
 
                 #Logo on studs
