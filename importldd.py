@@ -1016,8 +1016,10 @@ class Converter:
                     edges = []
                     mesh.from_pydata(verts, edges, faces)
                     
-                    obj.matrix_world = transform_matrix
-                    #obj.matrix_world=((1,0,0,0),(0,.707,.707,0),(0,-.707,.707,0),(1,0,0,1))
+                    if not (len(pa.Bones) > flexflag):
+                        #Transform (move) only non-flex parts
+                        obj.matrix_world = transform_matrix
+                        #obj.matrix_world=((1,0,0,0),(0,.707,.707,0),(0,-.707,.707,0),(1,0,0,1))
 
                    
 
