@@ -16,6 +16,7 @@ import mathutils
 from bpy_extras.io_utils import (
         ImportHelper,
         orientation_helper,
+        axis_conversion,
         )
 
 
@@ -793,6 +794,8 @@ class Converter:
         #fstop = cl.args.fstop
         #fov =  cl.args.fov
         
+        global_matrix = axis_conversion(from_forward='-Y', from_up='Z', to_forward='Z',to_up='Y').to_4x4()
+        
         camera_data = bpy.data.cameras.new(name='Cam_Minus_1')
         camera_object = bpy.data.objects.new('Cam_Minus_1', camera_data)
         transform_matrix = mathutils.Matrix(((1.0, 0.0, 0.0, 0.0),(0.0, -1.0, 0.0, 0.0),(0.0, 0.0, -1.0, 0.0),(0.0, 0.0, 0.0, 1.0)))
@@ -1016,11 +1019,11 @@ class Converter:
                     edges = []
                     mesh.from_pydata(verts, edges, faces)
                     
+                    #obj.matrix_world = global_matrix
+                    
                     if not (len(pa.Bones) > flexflag):
                         #Transform (move) only non-flex parts
                         obj.matrix_world = transform_matrix
-                        #obj.matrix_world=((1,0,0,0),(0,.707,.707,0),(0,-.707,.707,0),(1,0,0,1))
-
                    
 
                 #Logo on studs
