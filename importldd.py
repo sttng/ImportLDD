@@ -869,8 +869,8 @@ class Converter:
                 brick_object.empty_display_size = 1.25
                 brick_object.empty_display_type = 'PLAIN_AXES'
                 #out.write('''
-        #def "brick{0}_{1}" (
-        #    add references = @./{2}/{1}.usda@ {{\n'''.format(currentpart, written_obj, assetsDir))
+                #def "brick{0}_{1}" (
+                # add references = @./{2}/{1}.usda@ {{\n'''.format(currentpart, written_obj, assetsDir))
             
                 if not (len(pa.Bones) > flexflag):
                 # Flex parts don't need to be moved, but non-flex need
