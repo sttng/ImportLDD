@@ -795,7 +795,9 @@ class Converter:
         #fov =  cl.args.fov
         
         global_matrix = axis_conversion(from_forward='-Z', from_up='Y', to_forward='Y',to_up='Z').to_4x4()
-        col = bpy.data.collections.get("Collection")
+        #col = bpy.data.collections.get("Collection")
+        col = bpy.data.collections.new(self.scene.Name)
+        bpy.context.scene.collection.children.link(col)
         
         for cam in self.scene.Scenecamera:
             camera_data = bpy.data.cameras.new(name='Cam_{0}'.format(cam.refID))   
