@@ -1014,7 +1014,7 @@ class Converter:
                     brick_object.scale = (scalefact, scalefact, scalefact)
                     
                 else:
-                    #Flex parts need only to be aligned to Blenders coordinate system
+                    #Flex parts need only to be aligned the Blender coordinate system
                     brick_object.matrix_world = global_matrix           
 
                 #Logo on studs
