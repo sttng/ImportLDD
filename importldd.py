@@ -794,7 +794,7 @@ class Converter:
         #fstop = cl.args.fstop
         #fov =  cl.args.fov
         
-        global_matrix = axis_conversion(from_forward='Z', from_up='Y', to_forward='Y',to_up='Z').to_4x4()
+        global_matrix = axis_conversion(from_forward='-Z', from_up='Y', to_forward='Y',to_up='Z').to_4x4()
         
         camera_data = bpy.data.cameras.new(name='Cam_Minus_1')
         camera_object = bpy.data.objects.new('Cam_Minus_1', camera_data)
@@ -806,7 +806,7 @@ class Converter:
             camera_data = bpy.data.cameras.new(name='Cam_{0}'.format(cam.refID))   
             camera_object = bpy.data.objects.new('Cam_{0}'.format(cam.refID), camera_data)
             transform_matrix = mathutils.Matrix(((cam.matrix.n11, cam.matrix.n21, cam.matrix.n31, cam.matrix.n41),(cam.matrix.n12, cam.matrix.n22, cam.matrix.n32, cam.matrix.n42),(cam.matrix.n13, cam.matrix.n23, cam.matrix.n33, cam.matrix.n43),(cam.matrix.n14, cam.matrix.n24, cam.matrix.n34, cam.matrix.n44)))
-            camera_object.matrix_world = transform_matrix 
+            camera_object.matrix_world = global_matrix @ transform_matrix 
             bpy.context.scene.collection.objects.link(camera_object)
             
         
