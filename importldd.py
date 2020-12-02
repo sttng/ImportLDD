@@ -1021,8 +1021,8 @@ class Converter:
                     #gop.close()
                     edges = []
                     mesh.from_pydata(verts, edges, faces)
-                    
-                    #obj.matrix_world = global_matrix 
+                    for f in mesh.polygons:
+                        f.use_smooth = True
                     
                 if not (len(pa.Bones) > flexflag):
                     #Transform (move) only non-flex parts
@@ -1032,10 +1032,9 @@ class Converter:
                 else:
                     brick_object.matrix_world = global_matrix
                 
-                
 
                 #Logo on studs
-                uselogoonstuds = True
+                uselogoonstuds = False
                 if uselogoonstuds == True: # write logo on studs in case flag True
                     a = 0
                     for studs in geo.studsFields2D:
