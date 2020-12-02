@@ -795,21 +795,15 @@ class Converter:
         #fov =  cl.args.fov
         
         global_matrix = axis_conversion(from_forward='-Z', from_up='Y', to_forward='Y',to_up='Z').to_4x4()
-        
-        camera_data = bpy.data.cameras.new(name='Cam_Minus_1')
-        camera_object = bpy.data.objects.new('Cam_Minus_1', camera_data)
-        transform_matrix = mathutils.Matrix(((1.0, 0.0, 0.0, 0.0),(0.0, -1.0, 0.0, 0.0),(0.0, 0.0, -1.0, 0.0),(0.0, 0.0, 0.0, 1.0)))
-        camera_object.matrix_world = transform_matrix
-        bpy.context.scene.collection.objects.link(camera_object)
+        col = bpy.data.collections.get("Collection")
         
         for cam in self.scene.Scenecamera:
             camera_data = bpy.data.cameras.new(name='Cam_{0}'.format(cam.refID))   
             camera_object = bpy.data.objects.new('Cam_{0}'.format(cam.refID), camera_data)
             transform_matrix = mathutils.Matrix(((cam.matrix.n11, cam.matrix.n21, cam.matrix.n31, cam.matrix.n41),(cam.matrix.n12, cam.matrix.n22, cam.matrix.n32, cam.matrix.n42),(cam.matrix.n13, cam.matrix.n23, cam.matrix.n33, cam.matrix.n43),(cam.matrix.n14, cam.matrix.n24, cam.matrix.n34, cam.matrix.n44)))
             camera_object.matrix_world = global_matrix @ transform_matrix 
-            bpy.context.scene.collection.objects.link(camera_object)
-            
-        
+            #bpy.context.scene.collection.objects.link(camera_object)
+            col.objects.link(camera_object)
         
         for bri in self.scene.Bricks:
             current += 1    
@@ -865,7 +859,8 @@ class Converter:
                     written_obj = written_obj + "_" + uniqueId
                 
                 brick_object = bpy.data.objects.new("brick{0}_{1}".format(currentpart, written_obj), None)                
-                bpy.context.scene.collection.objects.link(brick_object)
+                #bpy.context.scene.collection.objects.link(brick_object)
+                col.objects.link(brick_object)
                 brick_object.empty_display_size = 1.25
                 brick_object.empty_display_type = 'PLAIN_AXES'
                 #out.write('''
@@ -873,12 +868,10 @@ class Converter:
                 # add references = @./{2}/{1}.usda@ {{\n'''.format(currentpart, written_obj, assetsDir))
             
                 if not (len(pa.Bones) > flexflag):
-                # Flex parts don't need to be moved, but non-flex need
-                    #out.write('\t\t\tmatrix4d xformOp:transform = ( ({0}, {1}, {2}, {3}), ({4}, {5}, {6}, {7}), ({8}, {9}, {10}, {11}), ({12}, {13}, {14}, {15}) )\n'.format(n11, n12, n13, n14, n21, n22, n23, n24, n31, n32, n33, n34, n41, n42 ,n43, n44))
+                # Flex parts don't need to be moved, but non-flex parts need
                     #transform_matrix = mathutils.Matrix(((n11, n12, n13, n14),(n21, n22, n23, n24),(n31, n32, n33, n34),(n41, n42, n43, n44)))
                     transform_matrix = mathutils.Matrix(((n11, n21, n31, n41),(n12, n22, n32, n42),(n13, n23, n33, n43),(n14, n24, n34, n44)))
 
-                    
                     # Random Scale for brick seams
                     scalefact = (geo.maxGeoBounding - 0.025 * random.uniform(0.0, 1.000)) / geo.maxGeoBounding
 
@@ -922,10 +915,9 @@ class Converter:
                     mesh = bpy.data.meshes.new("geo{0}".format(written_geo))  # add the new mesh
                     geo_obj = bpy.data.objects.new(mesh.name, mesh)
                     geo_obj.parent = brick_object
-                    #col = bpy.data.collections.get("Collection")
-                    #col.objects.link(obj)
-                    bpy.context.scene.collection.objects.link(geo_obj)
-                    bpy.context.view_layer.objects.active = geo_obj
+                    col.objects.link(geo_obj)
+                    #bpy.context.scene.collection.objects.link(geo_obj)
+                    #bpy.context.view_layer.objects.active = geo_obj
 
                     verts = []
                     for point in geo.Parts[part].outpositions:
@@ -1223,12 +1215,11 @@ from bpy_extras.io_utils import ImportHelper
 from bpy.props import StringProperty, BoolProperty, EnumProperty
 from bpy.types import Operator
 
-@orientation_helper(axis_forward='-Z', axis_up='Y')
 class ImportLDDOps(Operator, ImportHelper):
     """This appears in the tooltip of the operator and in the generated docs"""
     bl_description  = "Import LEGO Digital Designer scenes (.lxf/.lxfml)"
     bl_idname = "import_scene.importldd"  # important since its how bpy.ops.import_test.some_data is constructed
-    bl_label = "Import LDD scenes"
+    bl_label = "Import LDD scene"
 
     # ImportHelper mixin class uses this
     filename_ext = ".lxf"
