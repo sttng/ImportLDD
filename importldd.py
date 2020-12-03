@@ -1033,7 +1033,7 @@ class Converter:
                                         #op.write('\n\t\tcolor3f[] primvars:displayColor = [({0}, {1}, {2})]\n'.format(lddmatri.r, lddmatri.g, lddmatri.b))
                                         #op.write('\t\trel material:binding = <Material{0}/material_{0}a>\n'.format(matname))
                                         #op.write('''\t\tdef "Material{0}" (add references = @./material_{0}.usda@)'''.format(matname))
-                                        logo_mesh = bpy.data.meshes.new("Logo")
+                                        logo_mesh = bpy.data.meshes.new('Logo_{0}_{1}_{2}'.format(a, i, j))
                                         logo_obj = bpy.data.objects.new(logo_mesh.name, logo_mesh)
                                         logo_obj.parent = brick_object
                                         col.objects.link(logo_obj)
@@ -1054,9 +1054,11 @@ class Converter:
                                         for f in logo_mesh.polygons:
                                             f.use_smooth = True
                                         
-                                        logo_transform_matrix = mathutils.Matrix(((studs.matrix.n11, studs.matrix.n21, studs.matrix.n31, studs.matrix.n41),(studs.matrix.n12, studs.matrix.n22, studs.matrix.n32, studs.matrix.n42),(studs.matrix.n13, studs.matrix.n23, studs.matrix.n33, studs.matrix.n43),(studs.matrix.n14, studs.matrix.n24, studs.matrix.n34, studs.matrix.n44)))
-                                        logo_obj.matrix_world = global_matrix @ logo_transform_matrix
+                                        #logo_transform_matrix = mathutils.Matrix(((studs.matrix.n11, studs.matrix.n21, studs.matrix.n31, studs.matrix.n41),(studs.matrix.n12, studs.matrix.n22, studs.matrix.n32, studs.matrix.n42),(studs.matrix.n13, studs.matrix.n23, studs.matrix.n33, studs.matrix.n43),(studs.matrix.n14, studs.matrix.n24, studs.matrix.n34, studs.matrix.n44)))
+                                        logo_transform_matrix = mathutils.Matrix(((studs.matrix.n11, studs.matrix.n21, studs.matrix.n31, -1 * studs.matrix.n41 + j * 0.4 + 0.0145),(studs.matrix.n12, studs.matrix.n22, studs.matrix.n32, -1 * studs.matrix.n42 + 0.14),(studs.matrix.n13, studs.matrix.n23, studs.matrix.n33, -1 * studs.matrix.n43 + i * 0.4 - 0),(studs.matrix.n14, studs.matrix.n24, studs.matrix.n34, studs.matrix.n44)))
+                                        logo_obj.matrix_world = logo_transform_matrix
                                         logo_obj.scale = (0.81, 0.81, 0.81)
+                                        #mat_loc = mathutils.Matrix.Translation((-1 * studs.matrix.n41 + j * 0.4 + 0.0145, -1 * studs.matrix.n42 + 0.14, -1 * studs.matrix.n43 + i * 0.4 - 0)) 
 
                 if not (len(pa.Bones) > flexflag):
                     #Transform (move) only non-flex parts
