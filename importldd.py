@@ -1033,7 +1033,7 @@ class Converter:
                                         #op.write('\n\t\tcolor3f[] primvars:displayColor = [({0}, {1}, {2})]\n'.format(lddmatri.r, lddmatri.g, lddmatri.b))
                                         #op.write('\t\trel material:binding = <Material{0}/material_{0}a>\n'.format(matname))
                                         #op.write('''\t\tdef "Material{0}" (add references = @./material_{0}.usda@)'''.format(matname))
-                                        logo_mesh = bpy.data.meshes.new('Logo_{0}_{1}_{2}'.format(a, i, j))
+                                        logo_mesh = bpy.data.meshes.new('Logo')
                                         logo_obj = bpy.data.objects.new(logo_mesh.name, logo_mesh)
                                         logo_obj.parent = brick_object
                                         col.objects.link(logo_obj)
