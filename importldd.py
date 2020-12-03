@@ -1055,7 +1055,7 @@ class Converter:
                                             f.use_smooth = True
                                         
                                         #logo_transform_matrix = mathutils.Matrix(((studs.matrix.n11, studs.matrix.n21, studs.matrix.n31, studs.matrix.n41),(studs.matrix.n12, studs.matrix.n22, studs.matrix.n32, studs.matrix.n42),(studs.matrix.n13, studs.matrix.n23, studs.matrix.n33, studs.matrix.n43),(studs.matrix.n14, studs.matrix.n24, studs.matrix.n34, studs.matrix.n44)))
-                                        logo_transform_matrix = mathutils.Matrix(((studs.matrix.n11, studs.matrix.n21, studs.matrix.n31, -1 * studs.matrix.n41 + j * 0.4 + 0.0145),(studs.matrix.n12, studs.matrix.n22, studs.matrix.n32, -1 * studs.matrix.n42 + 0.14),(studs.matrix.n13, studs.matrix.n23, studs.matrix.n33, -1 * studs.matrix.n43 + i * 0.4 - 0),(studs.matrix.n14, studs.matrix.n24, studs.matrix.n34, studs.matrix.n44)))
+                                        logo_transform_matrix = mathutils.Matrix(((studs.matrix.n11, studs.matrix.n21, studs.matrix.n31, -1 * studs.matrix.n41 + j * 0.4 - 0.015),(studs.matrix.n12, studs.matrix.n22, studs.matrix.n32, -1 * studs.matrix.n42 + 0.14),(studs.matrix.n13, studs.matrix.n23, studs.matrix.n33, -1 * studs.matrix.n43 + i * 0.4 - 0),(studs.matrix.n14, studs.matrix.n24, studs.matrix.n34, studs.matrix.n44)))
                                         logo_obj.matrix_world = logo_transform_matrix
                                         logo_obj.scale = (0.81, 0.81, 0.81)
                                         #mat_loc = mathutils.Matrix.Translation((-1 * studs.matrix.n41 + j * 0.4 + 0.0145, -1 * studs.matrix.n42 + 0.14, -1 * studs.matrix.n43 + i * 0.4 - 0)) 
