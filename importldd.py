@@ -1008,16 +1008,7 @@ class Converter:
                     edges = []
                     mesh.from_pydata(verts, edges, faces)
                     for f in mesh.polygons:
-                        f.use_smooth = True
-                    
-                if not (len(pa.Bones) > flexflag):
-                    #Transform (move) only non-flex parts
-                    brick_object.matrix_world =  global_matrix @ transform_matrix
-                    brick_object.scale = (scalefact, scalefact, scalefact)
-                    
-                else:
-                    #Flex parts need only to be aligned the Blender coordinate system
-                    brick_object.matrix_world = global_matrix           
+                        f.use_smooth = True         
 
                 #Logo on studs
                 uselogoonstuds = True
@@ -1062,6 +1053,19 @@ class Converter:
                                         logo_mesh.from_pydata(points, edges, faces)
                                         for f in logo_mesh.polygons:
                                             f.use_smooth = True
+                                        
+                                        logo_transform_matrix = mathutils.Matrix(((studs.matrix.n11, studs.matrix.n21, studs.matrix.n31, studs.matrix.n41),(studs.matrix.n12, studs.matrix.n22, studs.matrix.n32, studs.matrix.n42),(studs.matrix.n13, studs.matrix.n23, studs.matrix.n33, studs.matrix.n43),(studs.matrix.n14, studs.matrix.n24, studs.matrix.n34, studs.matrix.n44)))
+                                        logo_obj.matrix_world = global_matrix @ logo_transform_matrix
+                                        logo_obj.scale = (0.81, 0.81, 0.81)
+
+                if not (len(pa.Bones) > flexflag):
+                    #Transform (move) only non-flex parts
+                    brick_object.matrix_world =  global_matrix @ transform_matrix
+                    brick_object.scale = (scalefact, scalefact, scalefact)
+                    
+                else:
+                    #Flex parts need only to be aligned the Blender coordinate system
+                    brick_object.matrix_world = global_matrix  
                                         
 
                 #op.write('}\n')
