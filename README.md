@@ -1,7 +1,7 @@
 # ImportLDD
 A Blender plug-in for importing LEGO Digital Designer file format (lxf, lxfml) LEGO models.
 
-## Tips
+## Random Links
 
 * https://blender.stackexchange.com/questions/97230/how-to-write-an-import-script
 * http://wiki.xentax.com/index.php/Blender_Import_Guide
