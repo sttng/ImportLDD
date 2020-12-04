@@ -1202,6 +1202,7 @@ class Converter:
                                         #op.write('\t\trel material:binding = <Material{0}/material_{0}a>\n'.format(matname))
                                         #op.write('''\t\tdef "Material{0}" (add references = @./material_{0}.usda@)'''.format(matname))
                                         logo_mesh = bpy.data.meshes.new('Logo')
+                                        logo_mesh.materials.append(lddmatri.string(None))
                                         logo_obj = bpy.data.objects.new(logo_mesh.name, logo_mesh)
                                         logo_obj.parent = brick_object
                                         col.objects.link(logo_obj)
