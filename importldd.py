@@ -600,7 +600,7 @@ class Materials:
                 if usecsvcolors == True:
                     self.MaterialsRi[node.getAttribute('MatID')] = MaterialRi(materialId=node.getAttribute('MatID'), r=int(material_id_dict[node.getAttribute('MatID')][0]), g=int(material_id_dict[node.getAttribute('MatID')][1]), b=int(material_id_dict[node.getAttribute('MatID')][2]), materialType=str(material_id_dict[node.getAttribute('MatID')][3]))
                 elif usecsvcolors == False:
-                    self.MaterialsRi[node.getAttribute('MatID')] = MaterialRi(materialId=node.getAttribute('MatID'),r=int(node.getAttribute('Red')), g=int(node.getAttribute('Green')), b=int(node.getAttribute('Blue')), materialType=str(node.getAttribute('MaterialType')))
+                    self.MaterialsRi[node.getAttribute('MatID')] = MaterialRi(materialId=node.getAttribute('MatID'),r=int(node.getAttribute('Red')), g=int(node.getAttribute('Green')), b=int(node.getAttribute('Blue')), a=int(node.getAttribute('Alpha')), materialType=str(node.getAttribute('MaterialType')))
     
     def setLOC(self, loc):
         for key in loc.values:
@@ -611,13 +611,14 @@ class Materials:
         return self.MaterialsRi[mid]
 
 class MaterialRi:
-    def __init__(self, materialId, r, g, b, materialType):
+    def __init__(self, materialId, r, g, b, a, materialType):
         self.name = ''
         self.materialType = materialType
         self.materialId = materialId
         self.r = self.sRGBtoLinear(r)
         self.g = self.sRGBtoLinear(g)
         self.b = self.sRGBtoLinear(b)
+        self.a = self.sRGBtoLinear(a)
     
     # convert from sRGB luma to linear light: https://entropymine.com/imageworsener/srgbformula/
     def sRGBtoLinear(self, rgb):
@@ -760,7 +761,7 @@ def Xform "material_{0}" (
 }}\n'''.format(matId_or_decId, texture_strg, rgb_or_dec_str, ref_strg, round(random.random(), 3))
         
         material = bpy.data.materials.new(matId_or_decId)
-        material.diffuse_color = (self.r, self.g, self.b, 1.0)
+        material.diffuse_color = (self.r, self.g, self.b, self.a)
         
         #return bxdf_mat_str
         return material
