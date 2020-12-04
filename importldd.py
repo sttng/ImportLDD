@@ -935,9 +935,10 @@ class Converter:
         if self.database.initok:
             self.scene = Scene(file=filename)
 
-    def Export(self,filename):
+    def Export(self,filename, useLogoStuds):
         invert = Matrix3D() 
         #invert.n33 = -1 #uncomment to invert the Z-Axis
+        uselogoonstuds = useLogoStuds
         
         indexOffset = 1
         textOffset = 1
@@ -1180,7 +1181,7 @@ class Converter:
                         f.use_smooth = True         
 
                 #Logo on studs
-                uselogoonstuds = True
+                #uselogoonstuds = True
                 if uselogoonstuds == True: # write logo on studs in case flag True
                     a = 0
                     for studs in geo.studsFields2D:
@@ -1370,7 +1371,7 @@ def main():
 
 
 
-def read_some_data(context, filepath, use_some_setting):
+def read_some_data(context, filepath, use_some_setting, useLogoStuds):
     #print("running read_some_data...")
     #f = open(filepath, 'r', encoding='utf-8')
     #data = f.read()
@@ -1387,13 +1388,13 @@ def read_some_data(context, filepath, use_some_setting):
         setDBFolderVars(dbfolderlocation = FindDatabase())
         converter.LoadDBFolder(dbfolderlocation = FindDatabase())
         converter.LoadScene(filename=filepath)
-        converter.Export(filename=filepath)
+        converter.Export(filename=filepath, useLogoStuds=useLogoStuds)
         
     elif os.path.isfile(FindDatabase()):
         print("Found db.lif. Will use this.")
         converter.LoadDatabase(databaselocation = FindDatabase())
         converter.LoadScene(filename=filepath)
-        converter.Export(filename=filepath)
+        converter.Export(filename=filepath, useLogoStuds=useLogoStuds)
     else:
         print("no LDD database found please install LEGO-Digital-Designer")
 
@@ -1458,7 +1459,7 @@ class ImportLDDOps(Operator, ImportHelper):
     )
 
     def execute(self, context):
-        return read_some_data(context, self.filepath, self.use_setting)
+        return read_some_data(context, self.filepath, self.use_setting, self.useLogoStuds)
 
 
 # Only needed if you want to add into a dynamic menu
