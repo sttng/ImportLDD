@@ -583,20 +583,187 @@ class Materials:
     def getMaterialbyId(self, mid):
         return self.Materials[mid]
 
-class Material:
-    def __init__(self,id, r, g, b, a, mtype):
-        self.id = id
+class Materials:
+    def __init__(self, data):
+        self.MaterialsRi = {}
+        material_id_dict = {}
+        #with open('lego_colors.csv', 'r') as csvfile:
+        #    reader = csv.reader(csvfile, delimiter=',')
+        #    next(csvfile) # skip the first row
+        #    for row in reader:
+        #        material_id_dict[row[0]] = row[6], row[7], row[8], row[9]
+        
+        xml = minidom.parseString(data)
+        for node in xml.firstChild.childNodes: 
+            if node.nodeName == 'Material':
+                usecsvcolors = False
+                if usecsvcolors == True:
+                    self.MaterialsRi[node.getAttribute('MatID')] = MaterialRi(materialId=node.getAttribute('MatID'), r=int(material_id_dict[node.getAttribute('MatID')][0]), g=int(material_id_dict[node.getAttribute('MatID')][1]), b=int(material_id_dict[node.getAttribute('MatID')][2]), materialType=str(material_id_dict[node.getAttribute('MatID')][3]))
+                elif usecsvcolors == False:
+                    self.MaterialsRi[node.getAttribute('MatID')] = MaterialRi(materialId=node.getAttribute('MatID'),r=int(node.getAttribute('Red')), g=int(node.getAttribute('Green')), b=int(node.getAttribute('Blue')), materialType=str(node.getAttribute('MaterialType')))
+    
+    def setLOC(self, loc):
+        for key in loc.values:
+            if key in self.MaterialsRi:
+                self.MaterialsRi[key].name = loc.values[key]
+        
+    def getMaterialRibyId(self, mid):
+        return self.MaterialsRi[mid]
+
+class MaterialRi:
+    def __init__(self, materialId, r, g, b, materialType):
         self.name = ''
-        self.mattype = mtype
-        self.r = float(r)
-        self.g = float(g)
-        self.b = float(b)
-        self.a = float(a)
-    def string(self):
-        out = 'Kd {0} {1} {2}\nKa 1.600000 1.600000 1.600000\nKs 0.400000 0.400000 0.400000\nNs 3.482202\nTf 1 1 1\n'.format( self.r / 255, self.g / 255,self.b / 255) 
-        if self.a < 255:
-            out += 'Ni 1.575\n' + 'd {0}'.format(0.05) + '\n' + 'Tr {0}\n'.format(0.05)
-        return out
+        self.materialType = materialType
+        self.materialId = materialId
+        self.r = self.sRGBtoLinear(r)
+        self.g = self.sRGBtoLinear(g)
+        self.b = self.sRGBtoLinear(b)
+    
+    # convert from sRGB luma to linear light: https://entropymine.com/imageworsener/srgbformula/
+    def sRGBtoLinear(self, rgb):
+        rgb = float(rgb) / 255
+        if (rgb <= 0.0404482362771082): 
+            lin = float(rgb / 12.92)
+        else:
+            lin = float(pow((rgb + 0.055) / 1.055, 2.4))
+        return round(lin, 9)
+    
+    # convert from linear light to sRGB luma
+    def lineartosRGB(self, linear):
+        if (linear <= 0.00313066844250063):
+            rgb = float(linear * 12.92)
+        else:
+            rgb = float((1.055 * pow(linear, (1.0 / 2.4)) - 0.055))
+        return round(rgb, 5)
+        
+    def string(self, decorationId):
+        texture_strg = ''
+        ref_strg = ''
+        
+        if decorationId != None and decorationId != '0':
+        # We have decorations
+            rgb_or_dec_str = '<../diffuseColor_texture.outputs:rgb>'
+            ref_strg = '.connect'
+            matId_or_decId = '{0}_{1}'.format(self.materialId, decorationId)
+            
+            texture_strg = '''
+        def Shader "stAttrReader" 
+        {{
+            uniform token info:id = "UsdPrimvarReader_float2" 
+            token inputs:varname = "st"
+            float2 outputs:result
+        }}
+        def Shader "diffuseColor_texture"
+        {{
+            uniform token info:id = "UsdUVTexture"
+            asset inputs:file = @{0}.png@
+            float2 inputs:st.connect = <../stAttrReader.outputs:result>
+            float3 outputs:rgb
+        }}
+'''.format(decorationId, round(random.random(), 3))
+        
+        else:
+        # We don't have decorations
+            rgb_or_dec_str = '({0}, {1}, {2})'.format(self.r, self.g, self.b)
+            matId_or_decId = self.materialId
+            
+        if self.materialType == 'Transparent':
+            #bxdf_mat_str = texture_strg + 
+            bxdf_mat_str = '''#usda 1.0
+(
+    defaultPrim = "material_{0}"
+)
+def Xform "material_{0}" (
+    assetInfo = {{
+        asset identifier = @material_{0}.usda@
+        string name = "material_{0}"
+    }}
+    kind = "component"
+)
+{{
+    def Material "material_{0}a"
+    {{
+        
+        token outputs:surface.connect = <surfaceShader.outputs:surface>
+{1}		
+        def Shader "surfaceShader"
+        {{
+            uniform token info:id = "UsdPreviewSurface"
+            color3f inputs:diffuseColor{3} = {2}
+            float inputs:metallic = 0
+            float inputs:roughness = 0
+            float inputs:opacity = 0.2
+            token outputs:surface
+        }}
+        
+    }}
+}}\n'''.format(matId_or_decId, texture_strg, rgb_or_dec_str, ref_strg, round(random.random(), 3))
+            
+        elif self.materialType == 'Metallic':
+            bxdf_mat_str = '''#usda 1.0
+(
+    defaultPrim = "material_{0}"
+)
+def Xform "material_{0}" (
+    assetInfo = {{
+        asset identifier = @material_{0}.usda@
+        string name = "material_{0}"
+    }}
+    kind = "component"
+)
+{{
+    def Material "material_{0}a"
+    {{
+        
+        token outputs:surface.connect = <surfaceShader.outputs:surface>
+{1}		
+        def Shader "surfaceShader"
+        {{
+            uniform token info:id = "UsdPreviewSurface"
+            color3f inputs:diffuseColor{3} = {2}
+            float inputs:metallic = 1
+            float inputs:roughness = 0
+            token outputs:surface
+        }}
+        
+    }}
+}}\n'''.format(matId_or_decId, texture_strg, rgb_or_dec_str, ref_strg, round(random.random(), 3))
+        
+        else:
+            bxdf_mat_str = '''#usda 1.0
+(
+    defaultPrim = "material_{0}"
+)
+def Xform "material_{0}" (
+    assetInfo = {{
+        asset identifier = @material_{0}.usda@
+        string name = "material_{0}"
+    }}
+    kind = "component"
+)
+{{
+    def Material "material_{0}a"
+    {{
+        
+        token outputs:surface.connect = <surfaceShader.outputs:surface>
+{1}		
+        def Shader "surfaceShader"
+        {{
+            uniform token info:id = "UsdPreviewSurface"
+            color3f inputs:diffuseColor{3} = {2}
+            float inputs:metallic = 0
+            float inputs:roughness = 0
+            token outputs:surface
+        }}
+        
+    }}
+}}\n'''.format(matId_or_decId, texture_strg, rgb_or_dec_str, ref_strg, round(random.random(), 3))
+        
+        material = bpy.data.materials.new(matId_or_decId)
+        material.diffuse_color = (self.r, self.g, self.b, 1.0)
+        
+        #return bxdf_mat_str
+        return material
 
 class DBinfo:
     def __init__(self, data):
@@ -752,14 +919,14 @@ class Converter:
     def LoadDBFolder(self, dbfolderlocation):
         self.database = DBFolderReader(folder=dbfolderlocation)
 
-        if self.database.initok and self.database.fileexist(os.path.join(dbfolderlocation,'Materials.xml')) and self.database.fileexist(MATERIALNAMESPATH + 'EN/localizedStrings.loc'):
-            self.allMaterials = Materials(data=self.database.filelist[os.path.join(dbfolderlocation,'Materials.xml')].read());
-            self.allMaterials.setLOC(loc=LOCReader(data=self.database.filelist[MATERIALNAMESPATH + 'EN/localizedStrings.loc'].read()))
+        if self.database.initok and self.database.fileexist(os.path.join(dbfolderlocation,'Materials.xml')) and self.database.fileexist(os.path.normpath(MATERIALNAMESPATH + 'EN/localizedStrings.loc')):
+            self.allMaterials = Materials(data=self.database.filelist[os.path.normpath(os.path.join(dbfolderlocation,'Materials.xml'))].read());
+            self.allMaterials.setLOC(loc=LOCReader(data=self.database.filelist[os.path.normpath(MATERIALNAMESPATH + 'EN/localizedStrings.loc')].read()))
     
     def LoadDatabase(self,databaselocation):
         self.database = LIFReader(file=databaselocation)
 
-        if self.database.initok and self.database.fileexist('/Materials.xml') and self.database.fileexist(MATERIALNAMESPATH + 'EN/localizedStrings.loc'):
+        if self.database.initok and self.database.fileexist('/Materials.xml') and self.database.fileexist(os.path.normpath(MATERIALNAMESPATH + 'EN/localizedStrings.loc')):
             self.allMaterials = Materials(data=self.database.filelist['/Materials.xml'].read());
             self.allMaterials.setLOC(loc=LOCReader(data=self.database.filelist[MATERIALNAMESPATH + 'EN/localizedStrings.loc'].read()))
 
@@ -942,8 +1109,8 @@ class Converter:
                         print('WARNING: {0}.g{1} has NO material assignment in lxf. Replaced with color 9. Fix {0}.xml faces values.'.format(pa.designID, part))
                         materialCurrentPart = '9'
                     
-                    #lddmatri = self.allMaterials.getMaterialRibyId(materialCurrentPart)
-                    #matname = materialCurrentPart
+                    lddmatri = self.allMaterials.getMaterialRibyId(materialCurrentPart)
+                    matname = materialCurrentPart
 
                     deco = '0'
                     if hasattr(pa, 'decoration') and len(geo.Parts[part].textures) > 0:
@@ -961,12 +1128,13 @@ class Converter:
                     #            f.write(self.database.filelist[decofilename].read())
                     #            f.close()
 
-                    #if not matname in usedmaterials:
+                    if not matname in usedmaterials:
                     #    usedmaterials.append(matname)
                     #    outmat = open(os.path.join(assetsDir,"material_" + matname + ".usda"), "w+")
                         
                     #    if not deco == '0':
                     #        outmat.write(lddmatri.string(deco))
+                        mesh.materials.append(lddmatri.string(None))
 
                     #    else:
                     #        outmat.write(lddmatri.string(None))
