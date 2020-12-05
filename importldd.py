@@ -1080,12 +1080,6 @@ class Converter:
                                 if (geo.Parts[part].bonemap[k] == i):
                                     n.transformW( invert * b.matrix)
 
-                    #op.write('\tdef "g{0}" (\n'.format(part))
-                    #op.write('\t\tadd references = @./geo{0}.usda@\n\t)\n\t{{\n'.format(written_geo))
-                    
-                    #gop = open(os.path.join(assetsDir,"geo" + written_geo + ".usda"), "w+")
-                    #gop.write('''#usda 1.0 defaultPrim = "geo{0}" def Mesh "mesh{0}" {{\n'''.format(written_geo))
-                    
                     if "geo{0}".format(written_geo) not in geometriecache:
                         
                         mesh = bpy.data.meshes.new("geo{0}".format(written_geo))
@@ -1104,7 +1098,6 @@ class Converter:
                                 #gop.write('{0}({1}, {2}, {3})'.format(fmt, normal.x, normal.y, normal.z))
                                 fmt = ", "
 
-                        #gop.write('\t\tint[] faceVertexIndices = [')
                         faces = []
                         for face in geo.Parts[part].faces:
                             single_face = [face.a , face.b, face.c]
@@ -1119,7 +1112,6 @@ class Converter:
                     else:
                         mesh = geometriecache["geo{0}".format(written_geo)].copy()
                         mesh.materials.clear()
-                        print('g-cache')
                     
                     geo_obj = bpy.data.objects.new(mesh.name, mesh)
                     geo_obj.parent = brick_object
@@ -1252,23 +1244,12 @@ class Converter:
                 # Reset index for each part
                 indexOffset = 1
                 textOffset = 1
-                
-                #out.write('\t\t}\n')
-                
-                if not written_obj in writtenribs:
-                    writtenribs.append(written_obj)
-                    #dest = shutil.copy(written_obj + '.usda', assetsDir)
-                
-                #os.remove(written_obj + '.usda')
         
         useplane = True                
         if useplane == True: # write the floor plane in case True
             i = 0
             #out.write('''def Mesh "GroundPlane_1"'''.format(miny))
         
-        #zf.close()
-        #zfmat.close()
-        #out.write('}\n')
         sys.stdout.write('%s\r' % ('                                                                                                 '))
         print("--- %s seconds ---" % (time.time() - start_time))
         
