@@ -935,10 +935,9 @@ class Converter:
         if self.database.initok:
             self.scene = Scene(file=filename)
 
-    def Export(self,filename, useLogoStuds):
+    def Export(self,filename, useLogoStuds, useLDDCamera):
         invert = Matrix3D() 
         #invert.n33 = -1 #uncomment to invert the Z-Axis
-        uselogoonstuds = useLogoStuds
         
         indexOffset = 1
         textOffset = 1
@@ -959,7 +958,8 @@ class Converter:
         
         #useplane = cl.useplane
         #usenormal = cl.usenormal
-        #uselogoonstuds = cl.uselogoonstuds
+        uselogoonstuds = useLogoStuds
+        useLDDCamera = useLDDCamera
         #fstop = cl.args.fstop
         #fov =  cl.args.fov
         
@@ -968,15 +968,16 @@ class Converter:
         col = bpy.data.collections.new(self.scene.Name)
         bpy.context.scene.collection.children.link(col)
         
-        for cam in self.scene.Scenecamera:
-            camera_data = bpy.data.cameras.new(name='Cam_{0}'.format(cam.refID)) 
-            camera_object = bpy.data.objects.new('Cam_{0}'.format(cam.refID), camera_data)
-            transform_matrix = mathutils.Matrix(((cam.matrix.n11, cam.matrix.n21, cam.matrix.n31, cam.matrix.n41),(cam.matrix.n12, cam.matrix.n22, cam.matrix.n32, cam.matrix.n42),(cam.matrix.n13, cam.matrix.n23, cam.matrix.n33, cam.matrix.n43),(cam.matrix.n14, cam.matrix.n24, cam.matrix.n34, cam.matrix.n44)))
-            camera_object.matrix_world = global_matrix @ transform_matrix 
-            #bpy.context.scene.collection.objects.link(camera_object)
-            col.objects.link(camera_object)
-            camera_object.data.lens_unit = 'FOV'
-            camera_object.data.angle = math.radians(25)
+        if useLDDCamera == True:
+            for cam in self.scene.Scenecamera:
+                camera_data = bpy.data.cameras.new(name='Cam_{0}'.format(cam.refID)) 
+                camera_object = bpy.data.objects.new('Cam_{0}'.format(cam.refID), camera_data)
+                transform_matrix = mathutils.Matrix(((cam.matrix.n11, cam.matrix.n21, cam.matrix.n31, cam.matrix.n41),(cam.matrix.n12, cam.matrix.n22, cam.matrix.n32, cam.matrix.n42),(cam.matrix.n13, cam.matrix.n23, cam.matrix.n33, cam.matrix.n43),(cam.matrix.n14, cam.matrix.n24, cam.matrix.n34, cam.matrix.n44)))
+                camera_object.matrix_world = global_matrix @ transform_matrix 
+                #bpy.context.scene.collection.objects.link(camera_object)
+                col.objects.link(camera_object)
+                camera_object.data.lens_unit = 'FOV'
+                camera_object.data.angle = math.radians(25)
         
         for bri in self.scene.Bricks:
             current += 1    
@@ -1360,7 +1361,7 @@ def main():
 
 
 
-def convertldd_data(context, filepath, lddLIFPath, useLogoStuds):
+def convertldd_data(context, filepath, lddLIFPath, useLogoStuds, useLDDCamera):
         
     converter = Converter()
     if os.path.isdir(lddLIFPath):
@@ -1374,7 +1375,7 @@ def convertldd_data(context, filepath, lddLIFPath, useLogoStuds):
         
     if (os.path.isdir(lddLIFPath) or os.path.isfile(lddLIFPath)):
         converter.LoadScene(filename=filepath)
-        converter.Export(filename=filepath, useLogoStuds=useLogoStuds)  
+        converter.Export(filename=filepath, useLogoStuds=useLogoStuds, useLDDCamera=useLDDCamera)  
     
     else:
         print("no LDD database found please install LEGO-Digital-Designer")
@@ -1434,7 +1435,7 @@ class ImportLDDOps(Operator, ImportHelper):
     )
 
     def execute(self, context):
-        return convertldd_data(context, self.filepath, self.lddLIFPath, self.useLogoStuds)
+        return convertldd_data(context, self.filepath, self.lddLIFPath, self.useLogoStuds, self.useLDDCamera)
 
 
 # Only needed if you want to add into a dynamic menu
