@@ -926,10 +926,8 @@ class Converter:
     
     def LoadDatabase(self,databaselocation):
         self.database = LIFReader(file=databaselocation)
-        print('mmamama')
 
         if self.database.initok and self.database.fileexist(os.path.normpath('/Materials.xml')) and self.database.fileexist(os.path.normpath(MATERIALNAMESPATH + 'EN/localizedStrings.loc')):
-            print('mumumum')
             self.allMaterials = Materials(data=self.database.filelist[os.path.normpath('/Materials.xml')].read());
             self.allMaterials.setLOC(loc=LOCReader(data=self.database.filelist[os.path.normpath(MATERIALNAMESPATH + 'EN/localizedStrings.loc')].read()))
 
