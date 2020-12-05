@@ -1375,7 +1375,7 @@ def main():
 
 
 
-def read_some_data(context, filepath, use_some_setting, useLogoStuds):
+def read_some_data(context, filepath, useLogoStuds):
     #print("running read_some_data...")
     #f = open(filepath, 'r', encoding='utf-8')
     #data = f.read()
@@ -1434,16 +1434,10 @@ class ImportLDDOps(Operator, ImportHelper):
         default=FindDatabase(),
     ) 
     
-    use_setting: BoolProperty(
-        name="Example Boolean",
-        description="Example Tooltip",
-        default=True,
-    )
-    
     useLogoStuds: BoolProperty(
         name="Show 'LEGO' logo on studs",
         description="Shows the LEGO logo on each stud (at the expense of some extra geometry and import time)",
-        default=False,
+        default=True,
     )
 
     useCamera: BoolProperty(
@@ -1463,7 +1457,7 @@ class ImportLDDOps(Operator, ImportHelper):
     )
 
     def execute(self, context):
-        return read_some_data(context, self.filepath, self.use_setting, self.useLogoStuds)
+        return read_some_data(context, self.filepath, self.useLogoStuds)
 
 
 # Only needed if you want to add into a dynamic menu
