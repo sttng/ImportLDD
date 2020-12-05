@@ -993,7 +993,7 @@ class Converter:
                 else:
                     geo = geometriecache[pa.designID]
                     progress(current ,total , "(" + geo.designID + ") " + geo.Partname ,'-')
-                
+                    
                 # n11=a, n21=d, n31=g, n41=x,
                 # n12=b, n22=e, n32=h, n42=y,
                 # n13=c, n23=f, n33=i, n43=z,
@@ -1216,9 +1216,6 @@ class Converter:
                             for i in range(len(studs.custom2DField)):
                                 for j in range(len(studs.custom2DField[0])):
                                     if studs.custom2DField[i][j] in LOGOONSTUDSCONNTYPE: #Valid Connection type which are "allowed" for logo on stud
-                                        #if not "logoonstuds" in writtenribs:
-                                        #    writtenribs.append("logoonstuds")
-                                            #dest = shutil.copy('logoonstuds.usdc', assetsDir)                    
                                         #logo_transform_matrix = mathutils.Matrix(((studs.matrix.n11, studs.matrix.n21, studs.matrix.n31, studs.matrix.n41),(studs.matrix.n12, studs.matrix.n22, studs.matrix.n32, studs.matrix.n42),(studs.matrix.n13, studs.matrix.n23, studs.matrix.n33, studs.matrix.n43),(studs.matrix.n14, studs.matrix.n24, studs.matrix.n34, studs.matrix.n44)))
                                         logo_obj = bpy.data.objects.new(logo_mesh.name, logo_mesh)
                                         logo_obj.parent = brick_object
