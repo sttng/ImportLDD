@@ -1086,24 +1086,44 @@ class Converter:
                     #gop = open(os.path.join(assetsDir,"geo" + written_geo + ".usda"), "w+")
                     #gop.write('''#usda 1.0 defaultPrim = "geo{0}" def Mesh "mesh{0}" {{\n'''.format(written_geo))
                     
-                    mesh = bpy.data.meshes.new("geo{0}".format(written_geo))
+                    if "geo{0}".format(written_geo) not in geometriecache:
+                        
+                        mesh = bpy.data.meshes.new("geo{0}".format(written_geo))
+
+                        verts = []
+                        for point in geo.Parts[part].outpositions:
+                            single_vert = mathutils.Vector([point.x, point.y, point.z])
+                            verts.append(single_vert)
+                        
+                        usenormal = False
+                        if usenormal == True: # write normals in case flag True
+                            # WARNING: SOME PARTS MAY HAVE BAD NORMALS. FOR EXAMPLE MAYBE PART: (85861) PL.ROUND 1X1 W. THROUGHG. HOLE
+                            #gop.write('\t\tnormal3f[] normals = [')
+                            fmt = ""
+                            for normal in geo.Parts[part].outnormals:
+                                #gop.write('{0}({1}, {2}, {3})'.format(fmt, normal.x, normal.y, normal.z))
+                                fmt = ", "
+
+                        #gop.write('\t\tint[] faceVertexIndices = [')
+                        faces = []
+                        for face in geo.Parts[part].faces:
+                            single_face = [face.a , face.b, face.c]
+                            faces.append(single_face)
+                            
+                        edges = []
+                        mesh.from_pydata(verts, edges, faces)
+                        for f in mesh.polygons:
+                            f.use_smooth = True
+                        geometriecache["geo{0}".format(written_geo)] = mesh 
+                        
+                    else:
+                        mesh = geometriecache["geo{0}".format(written_geo)].copy()
+                        mesh.materials.clear()
+                        print('g-cache')
+                    
                     geo_obj = bpy.data.objects.new(mesh.name, mesh)
                     geo_obj.parent = brick_object
                     col.objects.link(geo_obj)
-
-                    verts = []
-                    for point in geo.Parts[part].outpositions:
-                        single_vert = mathutils.Vector([point.x, point.y, point.z])
-                        verts.append(single_vert)
-                    
-                    usenormal = True
-                    if usenormal == True: # write normals in case flag True
-                        # WARNING: SOME PARTS MAY HAVE BAD NORMALS. FOR EXAMPLE MAYBE PART: (85861) PL.ROUND 1X1 W. THROUGHG. HOLE
-                        #gop.write('\t\tnormal3f[] normals = [')
-                        fmt = ""
-                        for normal in geo.Parts[part].outnormals:
-                            #gop.write('{0}({1}, {2}, {3})'.format(fmt, normal.x, normal.y, normal.z))
-                            fmt = ", "
 
                     #try catch here for possible problems in materials assignment of various g, g1, g2, .. files in lxf file
                     try:
@@ -1146,12 +1166,6 @@ class Converter:
                     #op.write('\n\t\tcolor3f[] primvars:displayColor = [({0}, {1}, {2})]\n'.format(lddmatri.r, lddmatri.g, lddmatri.b))
                     #op.write('\t\trel material:binding = <Material{0}/material_{0}a>\n'.format(matname))
                     #op.write('''\t\tdef "Material{0}" (add references = @./material_{0}.usda@'''.format(matname))
-                    
-                    #gop.write('\t\tint[] faceVertexIndices = [')
-                    faces = []
-                    for face in geo.Parts[part].faces:
-                        single_face = [face.a , face.b, face.c]
-                        faces.append(single_face)
                             
                     #gop.write('\n\t\tcolor3f[] primvars:displayColor = [(1, 0, 0)]\n')
                             
@@ -1174,11 +1188,7 @@ class Converter:
                             fmt = ", "
                             #out.write(face.string("f",indexOffset,textOffset))
                     
-                    #gop.close()
-                    edges = []
-                    mesh.from_pydata(verts, edges, faces)
-                    for f in mesh.polygons:
-                        f.use_smooth = True         
+                    #gop.close()      
 
                 #Logo on studs
                 if uselogoonstuds == True: # write logo on studs in case flag True
