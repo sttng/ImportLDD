@@ -926,10 +926,12 @@ class Converter:
     
     def LoadDatabase(self,databaselocation):
         self.database = LIFReader(file=databaselocation)
+        print('mmamama')
 
-        if self.database.initok and self.database.fileexist('/Materials.xml') and self.database.fileexist(os.path.normpath(MATERIALNAMESPATH + 'EN/localizedStrings.loc')):
-            self.allMaterials = Materials(data=self.database.filelist['/Materials.xml'].read());
-            self.allMaterials.setLOC(loc=LOCReader(data=self.database.filelist[MATERIALNAMESPATH + 'EN/localizedStrings.loc'].read()))
+        if self.database.initok and self.database.fileexist(os.path.normpath('/Materials.xml')) and self.database.fileexist(os.path.normpath(MATERIALNAMESPATH + 'EN/localizedStrings.loc')):
+            print('mumumum')
+            self.allMaterials = Materials(data=self.database.filelist[os.path.normpath('/Materials.xml')].read());
+            self.allMaterials.setLOC(loc=LOCReader(data=self.database.filelist[os.path.normpath(MATERIALNAMESPATH + 'EN/localizedStrings.loc')].read()))
 
     def LoadScene(self,filename):
         if self.database.initok:
@@ -1375,7 +1377,7 @@ def main():
 
 
 
-def read_some_data(context, filepath, useLogoStuds):
+def convertldd_data(context, filepath, lddLIFPath, useLogoStuds):
     #print("running read_some_data...")
     #f = open(filepath, 'r', encoding='utf-8')
     #data = f.read()
@@ -1387,16 +1389,16 @@ def read_some_data(context, filepath, useLogoStuds):
     
     
     converter = Converter()
-    if os.path.isdir(FindDatabase()):
+    if os.path.isdir(lddLIFPath):
         print("Found DB folder. Will use this instead of db.lif!")
-        setDBFolderVars(dbfolderlocation = FindDatabase())
-        converter.LoadDBFolder(dbfolderlocation = FindDatabase())
+        setDBFolderVars(dbfolderlocation = lddLIFPath)
+        converter.LoadDBFolder(dbfolderlocation = lddLIFPath)
         converter.LoadScene(filename=filepath)
         converter.Export(filename=filepath, useLogoStuds=useLogoStuds)
         
-    elif os.path.isfile(FindDatabase()):
+    elif os.path.isfile(lddLIFPath):
         print("Found db.lif. Will use this.")
-        converter.LoadDatabase(databaselocation = FindDatabase())
+        converter.LoadDatabase(databaselocation = lddLIFPath)
         converter.LoadScene(filename=filepath)
         converter.Export(filename=filepath, useLogoStuds=useLogoStuds)
     else:
@@ -1428,7 +1430,7 @@ class ImportLDDOps(Operator, ImportHelper):
 
     # List of operator properties, the attributes will be assigned
     # to the class instance from the operator settings before calling.
-    lddPath: StringProperty(
+    lddLIFPath: StringProperty(
         name="",
         description="Full filepath to the LDD db folder / db.lif file",
         default=FindDatabase(),
@@ -1440,7 +1442,7 @@ class ImportLDDOps(Operator, ImportHelper):
         default=True,
     )
 
-    useCamera: BoolProperty(
+    useLDDCamera: BoolProperty(
         name="Import camera(s)",
         description="Import camera(s) from LEGO Digital Designer",
         default=True,
@@ -1457,7 +1459,7 @@ class ImportLDDOps(Operator, ImportHelper):
     )
 
     def execute(self, context):
-        return read_some_data(context, self.filepath, self.useLogoStuds)
+        return convertldd_data(context, self.filepath, self.lddLIFPath, self.useLogoStuds)
 
 
 # Only needed if you want to add into a dynamic menu
