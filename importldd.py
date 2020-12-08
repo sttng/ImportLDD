@@ -1186,7 +1186,7 @@ class Converter:
                         #gop.write('\n\t\tfloat2[] primvars:st = [')
                         uvs = []
                         for text in geo.Parts[part].textures:
-                            uv = [text.x, text.y]
+                            uv = [text.x, (-1) * text.y]
                             #gop.write('{0}({1}, {2})'.format(fmt, text.x, (-1) * text.y))
                             uvs.append(uv)
                     
