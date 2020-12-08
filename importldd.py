@@ -1259,10 +1259,7 @@ class Converter:
                     #Flex parts need only to be aligned the Blender coordinate system
                     brick_object.matrix_world = global_matrix  
                                         
-
-                #op.write('}\n')
                 # -----------------------------------------------------------------
-                #op.close()
                                 
                 # Reset index for each part
                 indexOffset = 1
