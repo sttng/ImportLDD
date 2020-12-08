@@ -1134,10 +1134,10 @@ class Converter:
                         decoCount += 1
 
                     extfile = ''
-                    #if not deco == '0':
+                    if not deco == '0':
                     #    extfile = deco + '.png'
                     #    matname += "_" + deco
-                    #    decofilename = DECORATIONPATH + deco + '.png'
+                        decofilename = DECORATIONPATH + deco + '.png'                     
                     #    if not os.path.isfile(os.path.join(assetsDir, extfile)) and self.database.fileexist(decofilename):
                     #        with open(os.path.join(assetsDir, extfile), "wb") as f:
                     #            f.write(self.database.filelist[decofilename].read())
@@ -1172,10 +1172,6 @@ class Converter:
                             uv = [text.x, text.y]
                             #gop.write('{0}({1}, {2})'.format(fmt, text.x, (-1) * text.y))
                             uvs.append(uv)
-                            
-                        #gop.write('] (\n')
-                        #gop.write('\t\t\tinterpolation = "faceVarying"\n')
-                        #gop.write('\t\t)\n')
                     
                         #gop.write('\t\tint[] primvars:st:indices = [')
                         
@@ -1189,8 +1185,7 @@ class Converter:
                                 uv_layer[loop_index].uv = uvs[mesh.loops[loop_index].vertex_index]
                                 #print("    UV: %r" % uv_layer[loop_index].uv)
                         
-                        for face in geo.Parts[part].faces:
-                            i = 0
+                        #for face in geo.Parts[part].faces:
                             #gop.write('{0}{1},{2},{3}'.format(fmt, face.a, face.b, face.c))
                             #out.write(face.string("f",indexOffset,textOffset))
                     
