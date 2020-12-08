@@ -1190,6 +1190,7 @@ class Converter:
                                 #print("    UV: %r" % uv_layer[loop_index].uv)
                         
                         for face in geo.Parts[part].faces:
+                            i = 0
                             #gop.write('{0}{1},{2},{3}'.format(fmt, face.a, face.b, face.c))
                             #out.write(face.string("f",indexOffset,textOffset))
                     
