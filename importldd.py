@@ -1163,21 +1163,34 @@ class Converter:
                             
                     if len(geo.Parts[part].textures) > 0:
                         
+                        mesh.uv_layers.new(do_init=False)
+                        uv_layer = mesh.uv_layers.active.data
+                        
                         #gop.write('\n\t\tfloat2[] primvars:st = [')
-                        fmt = ""
+                        uvs = []
                         for text in geo.Parts[part].textures:
+                            uv = [text.x, text.y]
                             #gop.write('{0}({1}, {2})'.format(fmt, text.x, (-1) * text.y))
-                            fmt = ", "
+                            uvs.append(uv)
                             
                         #gop.write('] (\n')
                         #gop.write('\t\t\tinterpolation = "faceVarying"\n')
                         #gop.write('\t\t)\n')
                     
                         #gop.write('\t\tint[] primvars:st:indices = [')
-                        fmt = ""
+                        
+                        for poly in mesh.polygons:
+                            #print("Polygon index: %d, length: %d" % (poly.index, poly.loop_total))
+
+                            # range is used here to show how the polygons reference loops,
+                            # for convenience 'poly.loop_indices' can be used instead.
+                            for loop_index in range(poly.loop_start, poly.loop_start + poly.loop_total):
+                                #print("    Vertex: %d" % mesh.loops[loop_index].vertex_index)
+                                uv_layer[loop_index].uv = uvs[mesh.loops[loop_index].vertex_index]
+                                #print("    UV: %r" % uv_layer[loop_index].uv)
+                        
                         for face in geo.Parts[part].faces:
                             #gop.write('{0}{1},{2},{3}'.format(fmt, face.a, face.b, face.c))
-                            fmt = ", "
                             #out.write(face.string("f",indexOffset,textOffset))
                     
                     #gop.close()      
