@@ -1137,7 +1137,24 @@ class Converter:
                     if not deco == '0':
                     #    extfile = deco + '.png'
                     #    matname += "_" + deco
-                        decofilename = DECORATIONPATH + deco + '.png'                     
+                        decofilename = DECORATIONPATH + deco + '.png'    
+                        
+                        mat = bpy.data.materials.new(name=deco + '.png')
+                        mat.use_nodes = True
+                        bsdf = mat.node_tree.nodes["Principled BSDF"]
+                        texImage = mat.node_tree.nodes.new('ShaderNodeTexImage')
+                        texImage.image = bpy.data.images.load(os.path.normpath(decofilename))
+                        mat.node_tree.links.new(bsdf.inputs['Base Color'], texImage.outputs['Color'])
+                        
+                        mesh.materials.append(mat)
+
+                        # Assign it to object
+                        #if geo_obj.data.materials:
+                        #    geo_obj.data.materials[0] = mat
+                        #else:
+                        #    geo_obj.data.materials.append(mat)                        
+                        
+                                         
                     #    if not os.path.isfile(os.path.join(assetsDir, extfile)) and self.database.fileexist(decofilename):
                     #        with open(os.path.join(assetsDir, extfile), "wb") as f:
                     #            f.write(self.database.filelist[decofilename].read())
