@@ -1082,7 +1082,7 @@ class Converter:
                     if "geo{0}".format(written_geo) not in geometriecache:
                         
                         mesh = bpy.data.meshes.new("geo{0}".format(written_geo))
-
+                        
                         verts = []
                         for point in geo.Parts[part].outpositions:
                             single_vert = mathutils.Vector([point.x, point.y, point.z])
@@ -1093,8 +1093,9 @@ class Converter:
                             # WARNING: SOME PARTS MAY HAVE BAD NORMALS. FOR EXAMPLE MAYBE PART: (85861) PL.ROUND 1X1 W. THROUGHG. HOLE
                             #gop.write('\t\tnormal3f[] normals = [')
                             for normal in geo.Parts[part].outnormals:
+                                i =0
                                 #gop.write('{0}({1}, {2}, {3})'.format(fmt, normal.x, normal.y, normal.z))
-
+                        
                         faces = []
                         for face in geo.Parts[part].faces:
                             single_face = [face.a , face.b, face.c]
