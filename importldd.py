@@ -499,7 +499,7 @@ class Primitive:
         root = xml.documentElement
         for node in root.childNodes:
             if node.__class__.__name__.lower() == 'comment':
-                self.comment = node[0].nodeValue
+                self.comment = node.nodeValue #'Skip the comment' #node[0].nodeValue
             if node.nodeName == 'Flex': 
                 for node in node.childNodes:
                     if node.nodeName == 'Bone':
