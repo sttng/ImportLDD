@@ -762,6 +762,24 @@ def Xform "material_{0}" (
         
         material = bpy.data.materials.new(matId_or_decId)
         material.diffuse_color = (self.r, self.g, self.b, self.a)
+        material.roughness = 0.1  #Increase roughness for more realistic plastic  
+        material.use_nodes = True #Enable material nodes for working with Cycles
+        transparents = ['40','41','311','113','111','43','42','126','48','182','44','49'] #List all IDs of transparent Lego colours 
+        if matId_or_decId in transparents: #If our material is transparent, we need to use a different shader to look correct (the Glass BSDF)
+            material.node_tree.nodes.remove(material.node_tree.nodes.get('Principled BSDF')) #remove default BSDF
+            out = material.node_tree.nodes.get('Material Output')
+            glass = material.node_tree.nodes.new('ShaderNodeBsdfGlass')         #add Glass BSDF
+            glass.inputs[0].default_value = (self.r, self.g, self.b, self.a)    #set proper color values
+            material.node_tree.links.new(out.inputs[0], glass.outputs[0])       #set Glass BSDF as the new material output node
+        else:    #If our material is not transparent, the default "Principled BSDF" suffices to capture its properties
+            material.node_tree.nodes["Principled BSDF"].inputs[0].default_value = (self.r, self.g, self.b, self.a) #set proper color
+            material.node_tree.nodes["Principled BSDF"].inputs[2].default_value = 0.1 #tweak roughness for realism
+
+            metals = ['179','298','145','147','139','310','297','309','315','316'] #list all IDs of metallic Lego colours
+            if matId_or_decId in metals: #if our material is metallic, we only need to tweak some values of the BSDF to reflect that
+                material.node_tree.nodes["Principled BSDF"].inputs[1].default_value = 1    #tweak metallic & roughness values for desired look
+                material.node_tree.nodes["Principled BSDF"].inputs[2].default_value = 0.2
+
         
         #return bxdf_mat_str
         return material
